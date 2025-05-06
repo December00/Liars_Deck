@@ -9,11 +9,25 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="resources\app_icon.png" />
       <None Remove="resources\cardsicon.png" />
+      <None Remove="resources\exit.png" />
     </ItemGroup>
 
     <ItemGroup>
+      <Reference Include="MySql.Data">
+        <HintPath>C:\Program Files (x86)\MySQL\MySQL Connector NET 9.0\MySql.Data.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Resource Include="resources\app_icon.png">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Resource>
       <Resource Include="resources\cardsicon.png">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Resource>
+      <Resource Include="resources\exit.png">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </Resource>
     </ItemGroup>

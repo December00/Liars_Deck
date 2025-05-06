@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Liars_deck"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1080" Width="1920"
+        Title="Liar's Deck" Height="1080" Width="1920"
+        Icon="resources/app_icon.png"
         WindowState="Maximized"
         WindowStyle="None"
         ResizeMode="NoResize">
@@ -24,7 +25,16 @@
                 <GradientStop Color="#FF0A8270" Offset="1"/>
             </LinearGradientBrush>
         </Grid.Background>
-
+        <Image x:Name="Exit" 
+                VerticalAlignment="Top"
+                 HorizontalAlignment="Right"
+                Margin="0, 24, 24, 0"
+                Source="/Liars_deck;component/resources/exit.png"
+                Width="32" 
+                Height="32"
+                Stretch="Uniform"
+                Cursor="Hand"
+                MouseDown="Exit_MouseDown"/>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="20">
             <Image x:Name="Icon" 
                     Source="/Liars_deck;component/resources/cardsicon.png"
@@ -88,7 +98,7 @@
 
             </Grid>
             <Grid VerticalAlignment="Top" Margin="0,240,0,0">
-                
+
 
                 <Rectangle 
                     Height="50" 
