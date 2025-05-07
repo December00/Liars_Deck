@@ -42,36 +42,12 @@ public partial class MainWindow : Window
             isRegMenu = !isRegMenu;
         }
     }
-    private void MainWindow_KeyDown(object sender, KeyEventArgs e)
-    {
-        if (e.Key == Key.Escape)
-        {
-            this.Close();
-        }
-    }
-    private void HyperLabel_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        ChangeMenu();
-    }
-    private void HyperLabel_MouseEnter(object sender, MouseEventArgs e)
-    {
-        HyperLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF55A94B"));
-    }
-
-    private void HyperLabel_MouseLeave(object sender, MouseEventArgs e)
-    {
-        HyperLabel.Foreground = Brushes.White;
-    }
-    private void Exit_MouseDown(object sender, MouseButtonEventArgs e)
-    {
-        this.Close();
-    }
-    private void Button_Click(object sender, RoutedEventArgs e)
+    private void AuthRegOperation()
     {
         User user = new User(this.LoginTextBox.Text, this.PasTextBox.Text);
         if (!isRegMenu)
         {
-            
+
             if (user.Authorization())
             {
 
@@ -87,5 +63,48 @@ public partial class MainWindow : Window
                 ChangeMenu();
             }
         }
+    }
+    private void MainWindow_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            this.Close();
+        }
+        if (e.Key == Key.Enter)
+        {
+            AuthRegOperation();
+        }
+    }
+    private void HyperLabel_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        ChangeMenu();
+    }
+    private void HyperLabel_MouseEnter(object sender, MouseEventArgs e)
+    {
+        HyperLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF55A94B"));
+    }
+
+    private void HyperLabel_MouseLeave(object sender, MouseEventArgs e)
+    {
+        HyperLabel.Foreground = Brushes.White;
+    }
+    private void Button_MouseEnter(object sender, MouseEventArgs e)
+    {
+        Button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#419937"));
+        //rgb = 65; 153; 55
+
+    }
+    private void Button_MouseLeave(object sender, MouseEventArgs e)
+    {
+        Button.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF55A94B"));
+        //rgb = 85; 169; 75
+    }
+    private void Exit_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        this.Close();
+    }
+    private void Button_Click(object sender, RoutedEventArgs e)
+    {
+        AuthRegOperation();
     }
 }

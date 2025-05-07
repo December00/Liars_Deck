@@ -127,7 +127,10 @@
                 Foreground="White" 
                 FontFamily="Arial Black" 
                 FontSize="20" 
-                BorderThickness="0" Click="Button_Click">
+                BorderThickness="0" 
+                Click="Button_Click"
+                MouseEnter="Button_MouseEnter"
+                MouseLeave="Button_MouseLeave">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
@@ -139,7 +142,7 @@
                     </ControlTemplate>
                 </Button.Template>
             </Button>
-            <Label x:Name="HyperLabel" Content="Зарегестрироваться" Foreground="White"
+            <Label x:Name="HyperLabel" Content="Зарегистрироваться" Foreground="White"
                    VerticalAlignment="Top"
                    HorizontalAlignment="Right"
                    Margin="0, 395, 120, 0"
