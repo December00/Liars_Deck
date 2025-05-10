@@ -9,7 +9,7 @@ using System.Windows;
 
 namespace Liars_deck.classes
 {
-    class User
+    public class User
     {
         public string login;
         private readonly string? password;
@@ -82,9 +82,14 @@ namespace Liars_deck.classes
                 MessageBox.Show("Поля не должны содержать пробел");
                 return false;
             }
-            if (password.Length < 8)
+            if (password.Length < 8 || password.Length >= 32)
             {
-                MessageBox.Show("Пароль должен иметь хотя бы 8 символов");
+                MessageBox.Show("Пароль должен иметь хотя бы 8 символов и не более 32");
+                return false;
+            }
+            if (login.Length >= 16)
+            {
+                MessageBox.Show("Логин не должен содержать более 16 символов");
                 return false;
             }
             DB db = new DB();

@@ -1,0 +1,184 @@
+﻿<Window x:Class="Liars_deck.MenuWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Liars_deck"
+        mc:Ignorable="d"
+        Icon="resources/app_icon.png"
+        WindowState="Maximized"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Title="MenuWindow" Height="1080" Width="1920">
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <LinearGradientBrush.RelativeTransform>
+                    <TransformGroup>
+                        <ScaleTransform CenterY="0.5" CenterX="0.5"/>
+                        <SkewTransform CenterX="0.5" CenterY="0.5"/>
+                        <RotateTransform Angle="120" CenterX="0.5" CenterY="0.5"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </LinearGradientBrush.RelativeTransform>
+                <GradientStop Color="#FF7CFF6B"/>
+                <GradientStop Color="#FF0A8270" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+
+        <Grid Margin="20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Top">
+                <Image x:Name="Icon" 
+                       Source="/Liars_deck;component/resources/cardsicon.png"
+                       Width="48" 
+                       Height="48"
+                       Stretch="Uniform"/>
+                <Label x:Name="NameLabel" Content="Liar's Deck" Foreground="White" 
+                       FontFamily="Arial Black" FontSize="24" FontWeight="Bold"/>
+            </StackPanel>
+
+            <Grid Grid.Column="2" VerticalAlignment="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="180"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Rectangle Grid.ColumnSpan="4" 
+                          Fill="#FF424242" 
+                          RadiusX="10" RadiusY="10"
+                          Width="500" Height="60">
+                    <Rectangle.Effect>
+                        <DropShadowEffect Color="Black" Direction="320" 
+                                        ShadowDepth="10" BlurRadius="20" Opacity="0.7"/>
+                    </Rectangle.Effect>
+                </Rectangle>
+
+                <Label x:Name="Username" Grid.Column="0"
+                       Content="December" 
+                       Foreground="White" 
+                       FontFamily="Arial Black"
+                       FontSize="24"
+                       VerticalAlignment="Center"
+                       Margin="20,0,0,0"/>
+
+                <Image x:Name="Cup" Grid.Column="1"
+                       Source="/Liars_deck;component/resources/cup.png"
+                       Width="32" Height="32"
+                       Stretch="Uniform"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Left"
+                       Margin="10,0,0,0"/>
+
+                <Label x:Name="RatingLabel" Grid.Column="1"
+                       Content="1827" 
+                       Foreground="White" 
+                       FontFamily="Arial Black"
+                       FontSize="24"
+                       VerticalAlignment="Center"
+                       Margin="42,0,0,0"/>
+
+                <Image x:Name="Exit" Grid.Column="2"
+                       Source="/Liars_deck;component/resources/exit.png"
+                       Width="32" Height="32"
+                       Stretch="Uniform"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Margin="0,0,15,0"
+                       Cursor="Hand"
+                       MouseDown="Exit_MouseDown"/>
+            </Grid>
+        </Grid>
+
+        <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,100">
+            <Label x:Name="WelcomeLabel" Content="Добро пожаловать в Liar's Deck!" Foreground="White" 
+                     FontFamily="Arial Black" FontSize="46"
+                     Margin="0, 0, 0, 30"
+                     HorizontalAlignment="Center" />
+            <Label x:Name="GlateLabel" Content="Играй, обманывай, побеждай!" Foreground="White" 
+                    FontFamily="Arial" FontSize="36"
+                    Margin="0, 0, 0, 80"
+                    HorizontalAlignment="Center" />
+            
+            <Button x:Name="ConnectButton" 
+                    Content="Подключиться к комнате" 
+                    Margin="0,0,0,40"
+                    Width="720" 
+                    Height="80"
+                    Foreground="White" 
+                    FontFamily="Arial Black"
+                    FontSize="28" 
+                    FontWeight="Bold"
+                    Cursor="Hand">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Rectangle Fill="#FF424242" RadiusX="10" RadiusY="10">
+                                <Rectangle.Effect>
+                                    <DropShadowEffect Color="Black" Direction="320" 
+                                            ShadowDepth="10" BlurRadius="20" Opacity="0.7"/>
+                                </Rectangle.Effect>
+                            </Rectangle>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <Button x:Name="CreateButton" 
+                    Content="Создать комнату" 
+                    Margin="0,0,0,40"
+                    Width="720" 
+                    Height="80"
+                    Foreground="White" 
+                    FontFamily="Arial Black"
+                    FontSize="28" 
+                    FontWeight="Bold"
+                    Cursor="Hand" Click="CreateButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Rectangle Fill="#FF424242" RadiusX="10" RadiusY="10">
+                                <Rectangle.Effect>
+                                    <DropShadowEffect Color="Black" Direction="320" 
+                                            ShadowDepth="10" BlurRadius="20" Opacity="0.7"/>
+                                </Rectangle.Effect>
+                            </Rectangle>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <Button x:Name="RulesButton" 
+                    Content="Правила" 
+                    Width="720" 
+                    Height="80"
+                    Foreground="White" 
+                    FontFamily="Arial Black"
+                    FontSize="28" 
+                    FontWeight="Bold"
+                    Cursor="Hand" >
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Rectangle Fill="#FF424242" RadiusX="10" RadiusY="10">
+                                <Rectangle.Effect>
+                                    <DropShadowEffect Color="Black" Direction="320" 
+                                            ShadowDepth="10" BlurRadius="20" Opacity="0.7"/>
+                                </Rectangle.Effect>
+                            </Rectangle>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
