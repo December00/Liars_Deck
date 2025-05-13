@@ -18,6 +18,9 @@ namespace Liars_deck.classes
         private string current_cards;
         private string last_player;
         public bool isPlaying = false;
+        private List<string> playerOrder;
+        private int currentPlayerIndex;
+        private Dictionary<string, List<char>> selectedCards = new Dictionary<string, List<char>>();
         public Game(Room room)
         {
             this.room = room;

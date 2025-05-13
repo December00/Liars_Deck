@@ -17,6 +17,8 @@ public class Room
     public Button NextButton { get; private set; }
     public string CurrentUsername { get; set; }
     public string CurrentDeck { get; set; } = "";
+    public Dictionary<string, List<int>> selectedCardIndices = new Dictionary<string, List<int>>();
+
     public Room(Grid grid)
     {
         gameGrid = grid;
@@ -282,7 +284,6 @@ public class Room
                 Tag = "cardsPanel"
             };
 
-            // Для текущего игрока используем реальные карты, для других - рубашку
             string cardsToShow = isCurrentUser ? CurrentDeck : new string('x', cards.Length);
 
             for (int i = 0; i < Math.Min(5, cardsToShow.Length); i++)
@@ -293,9 +294,16 @@ public class Room
                     Source = new BitmapImage(new Uri(cardImagePath)),
                     Width = 80,
                     Height = 96,
-                    Margin = new Thickness(-20, 0, 0, 0)
+                    Margin = new Thickness(-20, 0, 0, 0),
+                    Tag = i
                 };
-
+                if (!cardsToShow.Contains('x')){
+                    cardImage.MouseDown += (sender, e) =>
+                    {
+                        int index = (int)((Image)sender).Tag;
+                        ToggleCardSelection(username, index);
+                    };
+                }
                 cardsPanel.Children.Add(cardImage);
             }
 
@@ -315,5 +323,34 @@ public class Room
             'j' => "D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\joker.png",
             _ => "D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\Bluecard.png"
         };
+    }
+    private void ToggleCardSelection(string username, int index)
+    {
+        if (!selectedCardIndices.ContainsKey(username))
+            selectedCardIndices[username] = new List<int>();
+
+        if (selectedCardIndices[username].Contains(index))
+        {
+            selectedCardIndices[username].Remove(index);
+            UpdateCardVisual(username, index, false);
+        }
+        else if (selectedCardIndices[username].Count < 3)
+        {
+            selectedCardIndices[username].Add(index);
+            UpdateCardVisual(username, index, true);
+        }
+    }
+
+    private void UpdateCardVisual(string username, int index, bool selected)
+    {
+        var panel = gameGrid.Children.OfType<StackPanel>()
+            .FirstOrDefault(p => Grid.GetRow(p) == Grid.GetRow(clientElements[username].Item1));
+
+        if (panel != null && index < panel.Children.Count)
+        {
+            var image = (Image)panel.Children[index];
+            image.Effect = selected ? new DropShadowEffect { Color = Colors.Yellow, BlurRadius = 20 } : null;
+            image.Margin = selected ? new Thickness(-20, -10, 0, 0) : new Thickness(-20, 0, 0, 0);
+        }
     }
 }

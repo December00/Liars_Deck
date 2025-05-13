@@ -34,7 +34,11 @@ namespace Liars_deck
 
             room.InitializeButtons();
             room.StartButton.Click += StartButton_Click;
+            room.NextButton.Click += NextButton_Click;
         }
+
+        
+
         public GameWindow(User user)
         {
             InitializeComponent();
@@ -52,6 +56,8 @@ namespace Liars_deck
 
             room.InitializeButtons();
             room.StartButton.Visibility = Visibility.Collapsed;
+
+            room.NextButton.Click += NextButton_Click;
         }
 
         private void InitializeMainGrid()
@@ -164,6 +170,10 @@ namespace Liars_deck
                 room.StartButton.IsEnabled = false;
                 room.UpdateAllPlayersCards(game.GetPlayersHands());
             }
+        }
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
