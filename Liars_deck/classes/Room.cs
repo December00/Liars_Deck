@@ -343,13 +343,21 @@ public class Room
 
     private void UpdateCardVisual(string username, int index, bool selected)
     {
+        var playerElement = clientElements[username].Item1;
         var panel = gameGrid.Children.OfType<StackPanel>()
-            .FirstOrDefault(p => Grid.GetRow(p) == Grid.GetRow(clientElements[username].Item1));
+            .FirstOrDefault(p =>
+                Grid.GetRow(p) == Grid.GetRow(playerElement) &&
+                Grid.GetColumn(p) == Grid.GetColumn(playerElement) &&
+                Grid.GetColumnSpan(p) == Grid.GetColumnSpan(playerElement));
 
         if (panel != null && index < panel.Children.Count)
         {
             var image = (Image)panel.Children[index];
-            image.Effect = selected ? new DropShadowEffect { Color = Colors.Yellow, BlurRadius = 20 } : null;
+            image.Effect = selected ? new DropShadowEffect
+            {
+                Color = Colors.Yellow,
+                BlurRadius = 20
+            } : null;
             image.Margin = selected ? new Thickness(-20, -10, 0, 0) : new Thickness(-20, 0, 0, 0);
         }
     }
