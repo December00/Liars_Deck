@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
@@ -20,11 +21,13 @@ namespace Liars_deck
     /// </summary>
     public partial class MenuWindow : Window
     {
+        User user;
         public MenuWindow(User user)
         {
             InitializeComponent();
             this.Username.Content = user.login;
             this.RatingLabel.Content = user.rating;
+            this.user = user;   
         }
         private void Exit_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -33,8 +36,17 @@ namespace Liars_deck
 
         private void CreateButton_Click(object sender, RoutedEventArgs e)
         {
-            Server room = new Server();
-            room.Start(8000);
+            Server server = new Server();
+            GameWindow room = new GameWindow(server, user);
+            this.Close();
+            room.Show();
+        }
+
+        private void ConnectButton_Click(object sender, RoutedEventArgs e)
+        {
+            GameWindow room = new GameWindow(user);
+            this.Close();
+            room.Show();
         }
     }
 }

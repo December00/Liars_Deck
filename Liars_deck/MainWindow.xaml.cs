@@ -106,9 +106,9 @@ public partial class MainWindow : Window
     }
     private void Button_Click(object sender, RoutedEventArgs e)
     {
-        //AuthRegOperation();
-        this.Hide();
-        MenuWindow menuWindow = new MenuWindow(new User("December",""));
-        menuWindow.Show();
+        AuthRegOperation();
+        //this.Hide();
+        //MenuWindow menuWindow = new MenuWindow(new User("December",""));
+        //menuWindow.Show();
     }
 }

@@ -10,9 +10,15 @@
 
     <ItemGroup>
       <None Remove="resources\app_icon.png" />
+      <None Remove="resources\Bluecard.png" />
       <None Remove="resources\cardsicon.png" />
       <None Remove="resources\cup.png" />
+      <None Remove="resources\enter.png" />
       <None Remove="resources\exit.png" />
+      <None Remove="resources\joker.png" />
+      <None Remove="resources\king.png" />
+      <None Remove="resources\queen.png" />
+      <None Remove="Покер фон стола в зеленый цвет_ _ Премиум векторы.jfif" />
     </ItemGroup>
 
     <ItemGroup>
@@ -31,7 +37,26 @@
       <Resource Include="resources\cup.png">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </Resource>
+      <Resource Include="resources\enter.png">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Resource>
       <Resource Include="resources\exit.png">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Resource>
+      <Resource Include="resources\joker.png">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Resource>
+      <Resource Include="resources\king.png">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Resource>
+      <Resource Include="resources\queen.png">
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      </Resource>
+      <Resource Include="Покер фон стола в зеленый цвет_ _ Премиум векторы.jfif" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Resource Include="resources\Bluecard.png">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </Resource>
     </ItemGroup>

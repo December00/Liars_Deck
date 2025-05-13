@@ -115,7 +115,7 @@
                     FontFamily="Arial Black"
                     FontSize="28" 
                     FontWeight="Bold"
-                    Cursor="Hand">
+                    Cursor="Hand" Click="ConnectButton_Click">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Grid>
