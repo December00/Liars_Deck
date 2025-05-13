@@ -52,7 +52,7 @@ namespace Liars_deck.classes
                 clientThread.Start();
             }
         }
-        
+
         private void HandleClient(TcpClient newClient)
         {
             NetworkStream stream = newClient.GetStream();

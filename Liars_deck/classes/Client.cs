@@ -11,7 +11,7 @@ public class Client
     public event Action<string> OnPlayerConnected;
     public event Action<string> OnPlayerListReceived;
     public event Action<Dictionary<string, string>> OnCardsReceived;
-
+    public string current_deck = "";
     public Client(User user)
     {
         this.user = user;
@@ -61,6 +61,11 @@ public class Client
                         .Split(';')
                         .Select(part => part.Split(':'))
                         .ToDictionary(parts => parts[0], parts => parts[1]);
+
+                    if (cardsData.TryGetValue(user.login, out var myCards))
+                    {
+                        current_deck = myCards;
+                    }
 
                     OnCardsReceived?.Invoke(cardsData);
                 }

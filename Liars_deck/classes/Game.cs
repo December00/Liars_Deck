@@ -25,8 +25,6 @@ namespace Liars_deck.classes
 
         public bool Start()
         {
-
-            
             remainingDeck = "jjaaaaaakkkkkkqqqqqq";
             List<string> allPlayers = room.clientElements.Keys.ToList();
             if (allPlayers.Count > 1)
@@ -41,14 +39,18 @@ namespace Liars_deck.classes
                     players[player] = GetRandomCards(deckLetters, 5);
                 }
 
+                // Добавлено: сохраняем карты хоста в room.CurrentDeck
+                if (players.TryGetValue(room.CurrentUsername, out string hostCards))
+                {
+                    room.CurrentDeck = hostCards;
+                }
+
                 trump_card = GetTrumpCard();
                 current_cards = "";
 
-                // Рассылаем обновленные карты
                 _ = room.server.BroadcastPlayersCards(players);
-
-                // Обновляем интерфейс локально
                 room.UpdateCardsForAllPlayers(players);
+
                 return true;
             }
             else

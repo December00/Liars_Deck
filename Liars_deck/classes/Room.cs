@@ -15,6 +15,8 @@ public class Room
     public Button StartButton { get; private set; }
     public Button CheckButton { get; private set; }
     public Button NextButton { get; private set; }
+    public string CurrentUsername { get; set; }
+    public string CurrentDeck { get; set; } = "";
     public Room(Grid grid)
     {
         gameGrid = grid;
@@ -115,7 +117,7 @@ public class Room
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
-            if (clientElements.Count >= 4) 
+            if (clientElements.Count >= 4)
             {
                 MessageBox.Show("Комната заполнена");
                 return;
@@ -174,19 +176,19 @@ public class Room
     {
         switch (position)
         {
-            case 1: 
+            case 1:
                 SetPosition(rectangle, label, 2, 1, 2,
                     HorizontalAlignment.Center, VerticalAlignment.Bottom,
                     new Thickness(0, 0, 0, 20));
                 break;
 
-            case 2: 
+            case 2:
                 SetPosition(rectangle, label, 1, 0, 1,
                     HorizontalAlignment.Center, VerticalAlignment.Bottom,
                     new Thickness(20, 0, 0, 0));
                 break;
 
-            case 3: 
+            case 3:
                 SetPosition(rectangle, label, 0, 1, 2,
                     HorizontalAlignment.Center, VerticalAlignment.Bottom,
                     new Thickness(0, 20, 0, 0));
@@ -257,9 +259,19 @@ public class Room
             if (!clientElements.ContainsKey(username)) return;
 
             var (rectangle, label) = clientElements[username];
-            int row = Grid.GetRow(rectangle);
-            int column = Grid.GetColumn(rectangle);
-            int columnSpan = Grid.GetColumnSpan(rectangle);
+            bool isCurrentUser = username == CurrentUsername;
+
+            // Удаляем предыдущие карты
+            var panelsToRemove = gameGrid.Children
+                .OfType<StackPanel>()
+                .Where(sp => Grid.GetRow(sp) == Grid.GetRow(rectangle)
+                          && Grid.GetColumn(sp) == Grid.GetColumn(rectangle))
+                .ToList();
+
+            foreach (var panel in panelsToRemove)
+            {
+                gameGrid.Children.Remove(panel);
+            }
 
             StackPanel cardsPanel = new StackPanel
             {
@@ -267,27 +279,29 @@ public class Room
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 Margin = new Thickness(0, 0, 0, rectangle.Height + 10),
-                Tag = "cardsPanel" 
+                Tag = "cardsPanel"
             };
 
-            for (int i = 0; i < Math.Min(5, cards.Length); i++)
+            // Для текущего игрока используем реальные карты, для других - рубашку
+            string cardsToShow = isCurrentUser ? CurrentDeck : new string('x', cards.Length);
+
+            for (int i = 0; i < Math.Min(5, cardsToShow.Length); i++)
             {
-                string cardImagePath = GetCardImagePath(cards[i]);
+                string cardImagePath = GetCardImagePath(cardsToShow[i]);
                 Image cardImage = new Image
                 {
                     Source = new BitmapImage(new Uri(cardImagePath)),
                     Width = 80,
                     Height = 96,
-                    Margin = new Thickness(0, 0, 0, 0),
-
+                    Margin = new Thickness(-20, 0, 0, 0)
                 };
 
                 cardsPanel.Children.Add(cardImage);
             }
 
-            Grid.SetRow(cardsPanel, row);
-            Grid.SetColumn(cardsPanel, column);
-            Grid.SetColumnSpan(cardsPanel, columnSpan);
+            Grid.SetRow(cardsPanel, Grid.GetRow(rectangle));
+            Grid.SetColumn(cardsPanel, Grid.GetColumn(rectangle));
+            Grid.SetColumnSpan(cardsPanel, Grid.GetColumnSpan(rectangle));
             gameGrid.Children.Add(cardsPanel);
         });
     }
@@ -299,7 +313,7 @@ public class Room
             'k' => "D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\king.png",
             'q' => "D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\queen.png",
             'j' => "D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\joker.png",
-            _ => "pack://application:,,,/resources/Bluecard.png"
+            _ => "D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\Bluecard.png"
         };
     }
 }

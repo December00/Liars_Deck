@@ -21,7 +21,7 @@ namespace Liars_deck
 
             this.user = user;
             this.isHost = true;
-            this.room = new Room(MainGrid);
+            this.room = new Room(MainGrid) { CurrentUsername = user.login };
             this.room.server = server;
             this.room.server.OnClientConnected += room.AddClientUI;
             this.Enter.Visibility = Visibility.Collapsed;
@@ -42,7 +42,7 @@ namespace Liars_deck
 
             this.user = user;
             this.isHost = false;
-            this.room = new Room(MainGrid);
+            this.room = new Room(MainGrid) { CurrentUsername = user.login };
             this.gameClient = new Client(user);
 
             this.gameClient.OnPlayerConnected += OnPlayerConnectedHandler;
@@ -120,6 +120,12 @@ namespace Liars_deck
         }
         private void OnCardsReceivedHandler(Dictionary<string, string> playersCards)
         {
+            if (playersCards.TryGetValue(user.login, out string myCards))
+            {
+                gameClient.current_deck = myCards;
+                room.CurrentDeck = myCards;
+            }
+
             Application.Current.Dispatcher.Invoke(() =>
             {
                 room.UpdateCardsForAllPlayers(playersCards);
@@ -154,6 +160,7 @@ namespace Liars_deck
             game = new Game(room);
             if (game.Start())
             {
+                room.CurrentDeck = game.GetPlayersHands()[user.login];
                 room.StartButton.IsEnabled = false;
                 room.UpdateAllPlayersCards(game.GetPlayersHands());
             }
