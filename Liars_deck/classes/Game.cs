@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows;
+using System.Windows.Media;
 
 namespace Liars_deck.classes
 {
@@ -15,32 +17,45 @@ namespace Liars_deck.classes
         public char trump_card;
         private string current_cards;
         private string last_player;
+        public bool isPlaying = false;
         public Game(Room room)
         {
             this.room = room;
         }
 
-        public void Start()
+        public bool Start()
         {
+
+            
             remainingDeck = "jjaaaaaakkkkkkqqqqqq";
             List<string> allPlayers = room.clientElements.Keys.ToList();
-
-            List<char> deckLetters = new List<char>(remainingDeck);
-
-            foreach (string player in allPlayers) 
+            if (allPlayers.Count > 1)
             {
-                if (deckLetters.Count < 5) throw new InvalidOperationException("Недостаточно карт!");
-                players[player] = GetRandomCards(deckLetters, 5);
+                isPlaying = true;
+                room.StartButton.Foreground = Brushes.Gray;
+                List<char> deckLetters = new List<char>(remainingDeck);
+
+                foreach (string player in allPlayers)
+                {
+                    if (deckLetters.Count < 5) throw new InvalidOperationException("Недостаточно карт!");
+                    players[player] = GetRandomCards(deckLetters, 5);
+                }
+
+                trump_card = GetTrumpCard();
+                current_cards = "";
+
+                // Рассылаем обновленные карты
+                _ = room.server.BroadcastPlayersCards(players);
+
+                // Обновляем интерфейс локально
+                room.UpdateCardsForAllPlayers(players);
+                return true;
             }
-
-            trump_card = GetTrumpCard();
-            current_cards = "";
-
-            // Рассылаем обновленные карты
-            _ = room.server.BroadcastPlayersCards(players);
-
-            // Обновляем интерфейс локально
-            room.UpdateCardsForAllPlayers(players);
+            else
+            {
+                MessageBox.Show("Для начала игры в комнате должно быть от 2 до 4 игроков");
+                return false;
+            }
         }
 
         private string GetRandomCards(List<char> deck, int count)

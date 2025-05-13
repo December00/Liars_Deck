@@ -115,6 +115,11 @@ public class Room
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
+            if (clientElements.Count >= 4) 
+            {
+                MessageBox.Show("Комната заполнена");
+                return;
+            }
             if (clientElements.ContainsKey(username)) return;
 
             Rectangle rectangle = CreateClientRectangle();

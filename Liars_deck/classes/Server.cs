@@ -14,12 +14,14 @@ namespace Liars_deck.classes
 {
     public class Server
     {
+
         private TcpListener? listener;
         public List<TcpClient> clients = new List<TcpClient>();
         public Dictionary<TcpClient, string> clientUsers = new Dictionary<TcpClient, string>();
         public IPAddress ip = IPAddress.Any;
         public event Action<string>? OnClientConnected;
         public string hostname;
+        private const int MAX_PLAYERS = 3;
         public void Start(int port, string name)
         {
             try
@@ -40,12 +42,17 @@ namespace Liars_deck.classes
             while (true)
             {
                 TcpClient client = await listener.AcceptTcpClientAsync();
+                if (clients.Count >= MAX_PLAYERS)
+                {
+                    SendRejectionMessage(client, "Комната заполнена");
+                    continue;
+                }
                 clients.Add(client);
                 Thread clientThread = new Thread(() => HandleClient(client));
                 clientThread.Start();
             }
         }
-
+        
         private void HandleClient(TcpClient newClient)
         {
             NetworkStream stream = newClient.GetStream();
@@ -116,6 +123,16 @@ namespace Liars_deck.classes
             {
                 MessageBox.Show($"Ошибка рассылки карт: {ex.Message}");
             }
+        }
+        private void SendRejectionMessage(TcpClient client, string message)
+        {
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes($"ERROR:{message}");
+                client.GetStream().Write(data, 0, data.Length);
+                client.Close();
+            }
+            catch { }
         }
     }
 }

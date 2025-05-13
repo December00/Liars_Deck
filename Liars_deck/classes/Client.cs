@@ -1,6 +1,7 @@
 ﻿using Liars_deck.classes;
 using System.Net.Sockets;
 using System.Text;
+using System.Windows;
 
 public class Client
 {
@@ -44,8 +45,13 @@ public class Client
             {
                 int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
                 string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-
-                if (message.StartsWith("PLAYERLIST:"))
+                if (message.StartsWith("ERROR:"))
+                {
+                    MessageBox.Show(message.Substring(6));
+                    Disconnect();
+                    return;
+                }
+                else if (message.StartsWith("PLAYERLIST:"))
                 {
                     OnPlayerListReceived?.Invoke(message.Substring(11));
                 }
@@ -68,5 +74,12 @@ public class Client
                 break;
             }
         }
+
+    }
+    private void Disconnect()
+    {
+        stream?.Close();
+        client?.Close();
+        MessageBox.Show("Комната заполнена");
     }
 }

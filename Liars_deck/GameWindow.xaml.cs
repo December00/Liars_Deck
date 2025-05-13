@@ -149,10 +149,14 @@ namespace Liars_deck
 
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {
-            game = new Game(room);
-            game.Start();
+            if (game != null && game.isPlaying) return;
 
-            room.UpdateAllPlayersCards(game.GetPlayersHands());
+            game = new Game(room);
+            if (game.Start())
+            {
+                room.StartButton.IsEnabled = false;
+                room.UpdateAllPlayersCards(game.GetPlayersHands());
+            }
         }
     }
 }
