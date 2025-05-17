@@ -1,90 +1,109 @@
-﻿using Liars_deck.classes;
-using System.Net.Sockets;
-using System.Text;
-using System.Windows;
+﻿    using Liars_deck.classes;
+    using System.Net.Sockets;
+    using System.Text;
+    using System.Windows;
 
-public class Client
-{
-    private TcpClient client;
-    private NetworkStream stream;
-    public User user;
-    public event Action<string> OnPlayerConnected;
-    public event Action<string> OnPlayerListReceived;
-    public event Action<Dictionary<string, string>> OnCardsReceived;
-    public string current_deck = "";
-    public Client(User user)
+    public class Client
     {
-        this.user = user;
-    }
-
-    public async Task ConnectAsync(string ip)
-    {
-        try
+        private TcpClient client;
+        private NetworkStream stream;
+        public User user;
+        public event Action<string> OnPlayerConnected;
+        public event Action<string> OnPlayerListReceived;
+        public event Action<Dictionary<string, string>> OnCardsReceived;
+        public event Action<string> OnCardsToCenter;
+        public event Action<string, string> OnTurnChanged;
+        public string current_deck = "";
+        public Client(User user)
         {
-            client = new TcpClient();
-            await client.ConnectAsync(ip, 8000);
-            stream = client.GetStream();
-
-            byte[] data = Encoding.UTF8.GetBytes(user.login);
-            await stream.WriteAsync(data, 0, data.Length);
-
-            _ = Task.Run(ReceiveMessagesAsync);
+            this.user = user;
         }
-        catch (Exception ex)
-        {
-            throw new Exception($"Ошибка подключения: {ex.Message}");
-        }
-    }
 
-    private async Task ReceiveMessagesAsync()
-    {
-        byte[] buffer = new byte[1024];
-        while (true)
+        public async Task ConnectAsync(string ip)
         {
             try
             {
-                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-                string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                if (message.StartsWith("ERROR:"))
-                {
-                    MessageBox.Show(message.Substring(6));
-                    Disconnect();
-                    return;
-                }
-                else if (message.StartsWith("PLAYERLIST:"))
-                {
-                    OnPlayerListReceived?.Invoke(message.Substring(11));
-                }
-                else if (message.StartsWith("CARDS:"))
-                {
-                    var cardsData = message.Substring(6)
-                        .Split(';')
-                        .Select(part => part.Split(':'))
-                        .ToDictionary(parts => parts[0], parts => parts[1]);
+                client = new TcpClient();
+                await client.ConnectAsync(ip, 8000);
+                stream = client.GetStream();
 
-                    if (cardsData.TryGetValue(user.login, out var myCards))
-                    {
-                        current_deck = myCards;
-                    }
+                byte[] data = Encoding.UTF8.GetBytes(user.login);
+                await stream.WriteAsync(data, 0, data.Length);
 
-                    OnCardsReceived?.Invoke(cardsData);
-                }
-                else
-                {
-                    OnPlayerConnected?.Invoke(message);
-                }
+                _ = Task.Run(ReceiveMessagesAsync);
             }
-            catch
+            catch (Exception ex)
             {
-                break;
+                throw new Exception($"Ошибка подключения: {ex.Message}");
             }
         }
 
+        private async Task ReceiveMessagesAsync()
+        {
+            byte[] buffer = new byte[1024];
+            while (true)
+            {
+                try
+                {
+                    int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    if (message.StartsWith("ERROR:"))
+                    {
+                        MessageBox.Show(message.Substring(6));
+                        Disconnect();
+                        return;
+                    }
+                    else if (message.StartsWith("PLAYERLIST:"))
+                    {
+                        OnPlayerListReceived?.Invoke(message.Substring(11));
+                    }
+                    else if (message.StartsWith("CARDS:"))
+                    {
+                        var cardsData = message.Substring(6)
+                            .Split(';')
+                            .Select(part => part.Split(':'))
+                            .ToDictionary(parts => parts[0], parts => parts[1]);
+
+                        if (cardsData.TryGetValue(user.login, out var myCards))
+                        {
+                            current_deck = myCards;
+                        }
+
+                        OnCardsReceived?.Invoke(cardsData);
+                    }
+                    else if (message.StartsWith("CARDS_TO_CENTER:"))
+                    {
+                        OnCardsToCenter?.Invoke(message.Substring(16));
+                    }
+                    else if (message.StartsWith("TURN:"))
+                    {
+                        var parts = message.Substring(5).Split(':');
+                        OnTurnChanged?.Invoke(parts[0], parts[1]);
+                    }
+                    else
+                    {
+                        OnPlayerConnected?.Invoke(message);
+                    }
+                }
+                catch
+                {
+                    break;
+                }
+            }
+
+        }
+
+        public async void WriteAsync(string message)
+        {
+            byte[] data = Encoding.UTF8.GetBytes(message);
+            await stream.WriteAsync(data, 0, data.Length);
+            
+           
+        }
+        private void Disconnect()
+        {
+            stream?.Close();
+            client?.Close();
+            MessageBox.Show("Комната заполнена");
+        }
     }
-    private void Disconnect()
-    {
-        stream?.Close();
-        client?.Close();
-        MessageBox.Show("Комната заполнена");
-    }
-}

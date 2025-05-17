@@ -15,14 +15,18 @@ public class Room
     public Button StartButton { get; private set; }
     public Button CheckButton { get; private set; }
     public Button NextButton { get; private set; }
+    public TextBlock TurnInfoText { get; private set; }
     public string CurrentUsername { get; set; }
     public string CurrentDeck { get; set; } = "";
+    public string currentTurn;
+    public string currentTrump;
     public Dictionary<string, List<int>> selectedCardIndices = new Dictionary<string, List<int>>();
 
     public Room(Grid grid)
     {
         gameGrid = grid;
         InitializeGridStructure();
+        InitializeTurnInfo();
         server = new Server();
         server.OnClientConnected += AddClientUI;
     }
@@ -42,6 +46,33 @@ public class Room
             gameGrid.ColumnDefinitions.Add(new ColumnDefinition());
         }
     }
+
+    public void InitializeTurnInfo()
+    {
+        TurnInfoText = new TextBlock
+        {
+            Foreground = Brushes.White,
+            FontSize = 20,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, 10, 20, 0),
+            FontWeight = FontWeights.Bold,
+        };
+        Grid.SetRow(TurnInfoText, 0);
+        Grid.SetColumn(TurnInfoText, 3);
+        gameGrid.Children.Add(TurnInfoText);
+    }
+
+    public void UpdateTurnInfo()
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+        
+            TurnInfoText.Text = $"Current: {currentTurn}\nTrump: {currentTrump}";
+            TurnInfoText.Visibility = Visibility.Visible;
+        });
+    }
+    
     public void InitializeButtons()
     {
         Application.Current.Dispatcher.Invoke(() =>
@@ -117,8 +148,10 @@ public class Room
 
     public void AddClientUI(string username)
     {
+        if (username.Contains(":")) return;
         Application.Current.Dispatcher.Invoke(() =>
         {
+            
             if (clientElements.Count >= 4)
             {
                 MessageBox.Show("Комната заполнена");
@@ -138,6 +171,7 @@ public class Room
             PositionUIElement(rectangle, label, position);
 
             clientElements[username] = Tuple.Create(rectangle, label);
+        
         });
     }
 
@@ -224,6 +258,10 @@ public class Room
     }
     public void UpdateCardsForAllPlayers(Dictionary<string, string> playersCards)
     {
+        if (playersCards.TryGetValue(CurrentUsername, out string myCards))
+        {
+            CurrentDeck = myCards;
+        }
         Application.Current.Dispatcher.Invoke(() =>
         {
             var cardsPanels = gameGrid.Children
@@ -284,7 +322,7 @@ public class Room
                 Tag = "cardsPanel"
             };
 
-            string cardsToShow = isCurrentUser ? CurrentDeck : new string('x', cards.Length);
+            string cardsToShow = (username == CurrentUsername) ? CurrentDeck : new string('x', cards.Length);
 
             for (int i = 0; i < Math.Min(5, cardsToShow.Length); i++)
             {
@@ -294,7 +332,7 @@ public class Room
                     Source = new BitmapImage(new Uri(cardImagePath)),
                     Width = 80,
                     Height = 96,
-                    Margin = new Thickness(-20, 0, 0, 0),
+                    Margin = new Thickness(0, 0, 0, 0),
                     Tag = i
                 };
                 if (!cardsToShow.Contains('x')){
@@ -329,14 +367,16 @@ public class Room
         if (!selectedCardIndices.ContainsKey(username))
             selectedCardIndices[username] = new List<int>();
 
-        if (selectedCardIndices[username].Contains(index))
+        var indices = selectedCardIndices[username];
+
+        if (indices.Contains(index))
         {
-            selectedCardIndices[username].Remove(index);
+            indices.Remove(index);
             UpdateCardVisual(username, index, false);
         }
-        else if (selectedCardIndices[username].Count < 3)
+        else if (indices.Count < 3)
         {
-            selectedCardIndices[username].Add(index);
+            indices.Add(index);
             UpdateCardVisual(username, index, true);
         }
     }
@@ -358,7 +398,47 @@ public class Room
                 Color = Colors.Yellow,
                 BlurRadius = 20
             } : null;
-            image.Margin = selected ? new Thickness(-20, -10, 0, 0) : new Thickness(-20, 0, 0, 0);
+            image.Margin = selected ? new Thickness(0, -10, 0, 0) : new Thickness(0, 0, 0, 0);
         }
+    }
+    public void ShowCardsInCenter(string cards)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            // Удаляем старые карты
+            var centerPanel = gameGrid.Children
+                .OfType<StackPanel>()
+                .FirstOrDefault(sp => sp.Name == "CenterCards");
+
+            if (centerPanel != null)
+            {
+                gameGrid.Children.Remove(centerPanel);
+            }
+
+            StackPanel newPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Name = "CenterCards"
+            };
+
+            foreach (char c in cards)
+            {
+                Image card = new Image
+                {
+                    Source = new BitmapImage(new Uri("D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\Bluecard.png")),
+                    Width = 80,
+                    Height = 96,
+                    Margin = new Thickness(5)
+                };
+                newPanel.Children.Add(card);
+            }
+
+            Grid.SetRow(newPanel, 1);
+            Grid.SetColumn(newPanel, 1);
+            Grid.SetColumnSpan(newPanel, 2);
+            gameGrid.Children.Add(newPanel);
+        });
     }
 }

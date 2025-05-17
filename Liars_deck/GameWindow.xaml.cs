@@ -1,179 +1,249 @@
-﻿using Liars_deck.classes;
-using System;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
+﻿    using Liars_deck.classes;
+    using System;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Input;
+    using System.Windows.Media;
 
-namespace Liars_deck
-{
-    public partial class GameWindow : Window
+    namespace Liars_deck
     {
-        private Game game;
-        private readonly Room room;
-        private readonly User user;
-        private readonly bool isHost;
-        private Client gameClient;
-
-        public GameWindow(Server server, User user)
+        public partial class GameWindow : Window
         {
-            InitializeComponent();
-            InitializeMainGrid();
-
-            this.user = user;
-            this.isHost = true;
-            this.room = new Room(MainGrid) { CurrentUsername = user.login };
-            this.room.server = server;
-            this.room.server.OnClientConnected += room.AddClientUI;
-            this.Enter.Visibility = Visibility.Collapsed;
-            this.room.server.Start(8000, user.login);
-            this.room.AddHostPlayer(user.login);
-
-            IPTextBox.Text = server.ip.ToString();
-            IPTextBox.IsEnabled = false;
-            Enter.IsEnabled = false;
-
-            room.InitializeButtons();
-            room.StartButton.Click += StartButton_Click;
-            room.NextButton.Click += NextButton_Click;
-        }
-
-        
-
-        public GameWindow(User user)
-        {
-            InitializeComponent();
-            InitializeMainGrid();
-
-            this.user = user;
-            this.isHost = false;
-            this.room = new Room(MainGrid) { CurrentUsername = user.login };
-            this.gameClient = new Client(user);
-
-            this.gameClient.OnPlayerConnected += OnPlayerConnectedHandler;
-            this.gameClient.OnPlayerListReceived += OnPlayerListReceivedHandler;
-            this.gameClient.OnCardsReceived += OnCardsReceivedHandler;
-            IPTextBox.Text = "127.0.0.1";
-
-            room.InitializeButtons();
-            room.StartButton.Visibility = Visibility.Collapsed;
-
-            room.NextButton.Click += NextButton_Click;
-        }
-
-        private void InitializeMainGrid()
-        {
-            MainGrid.RowDefinitions.Clear();
-            MainGrid.ColumnDefinitions.Clear();
-
-            for (int i = 0; i < 3; i++)
+            private Game game;
+            private Room room;
+            private Client client;
+            private User user;
+            private bool isHost;
+            public GameWindow(Server server, User user)
             {
-                MainGrid.RowDefinitions.Add(new RowDefinition());
-            }
-
-            for (int i = 0; i < 4; i++)
-            {
-                MainGrid.ColumnDefinitions.Add(new ColumnDefinition());
-            }
-        }
-
-        private async void Enter_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                if (!isHost)
-                {
-                    await gameClient.ConnectAsync(IPTextBox.Text);
-                }
-
-                Enter.IsEnabled = false;
+                InitializeComponent();
+                this.user = user;
+                this.client = new Client(user);
+                this.isHost = true;
+                this.room = new Room(MainGrid) { CurrentUsername = user.login };
+                this.room.server = server;
+                this.room.server.Start(8000, user.login);
+                this.room.AddHostPlayer(user.login);
+                room.InitializeButtons();
+                this.client.OnPlayerConnected += OnPlayerConnectedHandler;
+                this.client.OnPlayerListReceived += OnPlayerListReceivedHandler;
+                this.client.OnCardsReceived += OnCardsReceivedHandler;
+                this.client.OnCardsToCenter += OnCardsToCenterHandler;
+                this.client.OnTurnChanged += OnTurnChangedHandler;
+                this.room.server.OnClientAction += HandlePlayerAction;
+                IPTextBox.Text = "127.0.0.1";
                 IPTextBox.IsEnabled = false;
+                Connect();
+                this.game = new Game(room);
+                room.StartButton.Click += StartButton_Click;
+                room.NextButton.Click += NextButton_Click;
+                room.CheckButton.Click += CheckButton_Click;
+                room.NextButton.IsEnabled = false;
+                room.CheckButton.IsEnabled = false;
+                room.CheckButton.Foreground = Brushes.Gray;
+                room.NextButton.Foreground = Brushes.Gray;
             }
-            catch (Exception ex)
+            
+            public GameWindow(User user)
             {
-                MessageBox.Show($"Ошибка подключения: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                InitializeComponent();
+                this.isHost = false;
+                this.user = user;
+                this.client = new Client(user);
+                IPTextBox.Text = "127.0.0.1";
+                this.room = new Room(MainGrid) { CurrentUsername = user.login };
+                room.InitializeButtons();
+                room.StartButton.Visibility = Visibility.Collapsed;
+                this.client.OnPlayerConnected += OnPlayerConnectedHandler;
+                this.client.OnPlayerListReceived += OnPlayerListReceivedHandler;
+                this.client.OnCardsReceived += OnCardsReceivedHandler;
+                this.client.OnCardsToCenter += OnCardsToCenterHandler;
+                this.client.OnTurnChanged += OnTurnChangedHandler;
+                this.game = new Game(room);
+                room.NextButton.Click += NextButton_Click;
+                room.CheckButton.Click += CheckButton_Click;
+                room.NextButton.IsEnabled = false;
+                room.CheckButton.IsEnabled = false;
+                room.CheckButton.Foreground = Brushes.Gray;
+                room.NextButton.Foreground = Brushes.Gray;
             }
-        }
 
-        private void OnPlayerConnectedHandler(string username)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
+            
+            private void OnPlayerConnectedHandler(string username)
             {
-                if (!room.clientElements.ContainsKey(username))
-                {
-                    room.AddClientUI(username);
-                }
-            });
-        }
+                if (username.StartsWith("PLAYER_TURN:")) return;
 
-        private void OnPlayerListReceivedHandler(string playerList)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                foreach (var username in playerList.Split(','))
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (!string.IsNullOrEmpty(username) && username != user.login)
+                    if (!room.clientElements.ContainsKey(username))
                     {
                         room.AddClientUI(username);
                     }
-                }
+                });
+            }
 
-                if (!isHost)
+            private void OnPlayerListReceivedHandler(string playerList)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    room.AddClientUI(user.login);
+                    foreach (var username in playerList.Split(','))
+                    {
+                        if (!string.IsNullOrEmpty(username) && username != user.login)
+                        {
+                            room.AddClientUI(username);
+                        }
+                    }
+
+                    if (!isHost)
+                    {
+                        room.AddClientUI(user.login);
+                    }
+                });
+            }
+            private void OnCardsReceivedHandler(Dictionary<string, string> playersCards)
+            {
+                if (playersCards.TryGetValue(user.login, out string myCards))
+                {
+                    client.current_deck = myCards;
+                    room.CurrentDeck = myCards;
                 }
-            });
-        }
-        private void OnCardsReceivedHandler(Dictionary<string, string> playersCards)
-        {
-            if (playersCards.TryGetValue(user.login, out string myCards))
+
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    room.UpdateCardsForAllPlayers(playersCards);
+                });
+            }
+            private void OnCardsToCenterHandler(string cards)
             {
-                gameClient.current_deck = myCards;
-                room.CurrentDeck = myCards;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    room.ShowCardsInCenter(cards);
+                });
+            }
+            private void OnTurnChangedHandler(string currentTurn, string trump)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    room.currentTurn = currentTurn;
+                    room.currentTrump = GetTrumpCardName(trump);
+                    room.UpdateTurnInfo();
+                    room.TurnInfoText.Text = $"Current: {currentTurn}\nTrump: {room.currentTrump}";
+                    if (currentTurn != user.login)
+                    {
+                        room.NextButton.IsEnabled = false;
+                        room.CheckButton.IsEnabled = false;
+                        room.CheckButton.Foreground = Brushes.Gray;
+                        room.NextButton.Foreground = Brushes.Gray;
+                    }
+                    else
+                    {
+                        room.NextButton.IsEnabled = true;
+                        room.CheckButton.IsEnabled = true;
+                        room.CheckButton.Foreground = Brushes.White;
+                        room.NextButton.Foreground = Brushes.White;
+                    }
+                });
+                
+            }
+            private void HandlePlayerAction(string username, List<int> cards)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    // Проверяем, что ход текущего игрока совпадает с отправителем
+                    if (game.queue[game.currentPlayerIndex] == username)
+                    {
+                        // Обновляем карты игрока
+                        game.Update(cards, username);
+                    }
+                });
+            }
+            private string GetTrumpCardName(string trump)
+            {
+                return trump switch
+                {
+                    "a" => "Ace",
+                    "k" => "King",
+                    "q" => "Queen",
+                    _ => "Unknown"
+                };
+            }
+            private async void Connect()
+            {
+                try
+                {
+                    await client.ConnectAsync(IPTextBox.Text);
+                    Enter.IsEnabled = false;
+                    IPTextBox.IsEnabled = false;
+                    
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка подключения: {ex.Message}", "Ошибка",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
 
-            Application.Current.Dispatcher.Invoke(() =>
+
+            private void Enter_MouseDown(object sender, MouseButtonEventArgs e)
             {
-                room.UpdateCardsForAllPlayers(playersCards);
-            });
-        }
-
-        private void Exit_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
-
-        protected override void OnClosed(EventArgs e)
-        {
-            base.OnClosed(e);
-
-            if (!isHost && gameClient != null)
-            {
-                gameClient.OnPlayerConnected -= OnPlayerConnectedHandler;
-                gameClient.OnPlayerListReceived -= OnPlayerListReceivedHandler;
+                Connect();
+                
             }
 
-            if (isHost && room?.server != null)
-            {
-                room.server.OnClientConnected -= room.AddClientUI;
-            }
-        }
+            
 
-        private void StartButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (game != null && game.isPlaying) return;
-
-            game = new Game(room);
-            if (game.Start())
+            private void Exit_MouseDown(object sender, MouseButtonEventArgs e)
             {
-                room.CurrentDeck = game.GetPlayersHands()[user.login];
-                room.StartButton.IsEnabled = false;
-                room.UpdateAllPlayersCards(game.GetPlayersHands());
+                Application.Current.Shutdown();
             }
-        }
-        private void NextButton_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
+            private void StartButton_Click(object sender, RoutedEventArgs e)
+            {
+                if (game != null && game.isPlaying) return;
+
+                if (game.Start())
+                {
+                    room.CurrentDeck = game.GetPlayersHands()[user.login];
+                    room.StartButton.IsEnabled = false;
+                    room.UpdateAllPlayersCards(game.GetPlayersHands());
+                    room.NextButton.IsEnabled = true;
+                    room.NextButton.Foreground = Brushes.White;
+                    room.CheckButton.IsEnabled = true;
+                    room.CheckButton.Foreground = Brushes.White;
+                }
+            }
+            private void CheckButton_Click(object sender, RoutedEventArgs e)
+            {
+                if (game.Check())
+                {
+                    MessageBox.Show("Предыдущий игрок не врал!");
+                }
+                else
+                {
+                    MessageBox.Show("Предыдущий игрок пытался вас обмануть!");
+                }
+        
+            }
+            private async void NextButton_Click(object sender, RoutedEventArgs e)
+            {
+                if (room.selectedCardIndices[user.login].Count != 0)
+                {
+                    if (isHost)
+                    {
+                        
+                        game.Update(room.selectedCardIndices[user.login]);
+                    }
+                    else
+                    {
+                        var cards = string.Join(",", room.selectedCardIndices[user.login]);
+                        string message = $"PLAYER_TURN:{user.login}:{cards}";
+                        client.WriteAsync(message);
+                    }
+                    room.selectedCardIndices[user.login].Clear();
+
+                }
+                else MessageBox.Show("Для завершения хода нужно либо выбрать от 1 до 3 карт, либо проверить карты предыдущего игрока");
+                
+                
+            }
         }
     }
-}

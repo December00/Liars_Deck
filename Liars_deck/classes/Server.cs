@@ -19,10 +19,12 @@ namespace Liars_deck.classes
         public List<TcpClient> clients = new List<TcpClient>();
         public Dictionary<TcpClient, string> clientUsers = new Dictionary<TcpClient, string>();
         public IPAddress ip = IPAddress.Any;
+        public bool isAcceptingClients = true;
         public event Action<string>? OnClientConnected;
+        public event Action<string, List<int>> OnClientAction;
         public string hostname;
-        private const int MAX_PLAYERS = 3;
-        public void Start(int port, string name)
+        private const int MAX_PLAYERS = 4;
+                public void Start(int port, string name)
         {
             try
             {
@@ -36,10 +38,14 @@ namespace Liars_deck.classes
                 MessageBox.Show("Порт занят");
             }
         }
-
+        public void StopAcceptingClients()
+        {
+            isAcceptingClients = false;
+            listener.Stop(); 
+        }
         private async Task AcceptClients()
         {
-            while (true)
+            while (isAcceptingClients)
             {
                 TcpClient client = await listener.AcceptTcpClientAsync();
                 if (clients.Count >= MAX_PLAYERS)
@@ -76,6 +82,26 @@ namespace Liars_deck.classes
                         // Уведомляем остальных о новом игроке
                         NotifyOthersAboutNewPlayer(newClient, message);
                     }
+                    else if (message.StartsWith("PLAYER_TURN:"))
+                    {
+                        var parts = message.Split(':');
+                        string username = parts[1];
+                        List<int> cards = parts[2].Split(',').Select(int.Parse).ToList();
+
+                        var hostClient = clients.First();
+                        string modifiedMessage = $"PLAYER_TURN:{username}:{string.Join(",", cards)}";
+                        byte[] data = Encoding.UTF8.GetBytes(modifiedMessage);
+                        hostClient.GetStream().Write(data, 0, data.Length);
+                        OnClientAction?.Invoke(username, cards);
+                    }
+                    else if (message.StartsWith("CARDS_ACTION:"))
+                    {
+                        string username = clientUsers[newClient];
+                        string modifiedMessage = $"CARDS_ACTION:{username}:{message.Substring(13)}";
+                        var hostClient = clients.First();
+                        byte[] data = Encoding.UTF8.GetBytes(modifiedMessage);
+                        hostClient.GetStream().Write(data, 0, data.Length);
+                    }
                 }
                 catch
                 {
@@ -87,7 +113,7 @@ namespace Liars_deck.classes
         private void SendPlayerList(TcpClient client)
         {
             var stream = client.GetStream();
-            string playerList = hostname + "," + string.Join(",", clientUsers.Values);
+            string playerList = string.Join(",", clientUsers.Values);
             byte[] data = Encoding.UTF8.GetBytes($"PLAYERLIST:{playerList}");
             stream.Write(data, 0, data.Length);
         }
@@ -109,6 +135,7 @@ namespace Liars_deck.classes
             try
             {
                 string message = "CARDS:" + string.Join(";", players.Select(p => $"{p.Key}:{p.Value}"));
+                
                 byte[] data = Encoding.UTF8.GetBytes(message);
 
                 foreach (var client in clients)
@@ -122,6 +149,50 @@ namespace Liars_deck.classes
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка рассылки карт: {ex.Message}");
+            }
+        }
+        public async Task BroadcastCardsToCenter(string cards)
+        {
+            try
+            {
+                string message = $"CARDS_TO_CENTER:{cards}";
+                byte[] data = Encoding.UTF8.GetBytes(message);
+
+                foreach (var client in clients)
+                {
+                    if (client.Connected)
+                    {
+                        await client.GetStream().WriteAsync(data, 0, data.Length);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка рассылки карт: {ex.Message}");
+            }
+        }
+        public async Task BroadcastTurnInfo(string currentPlayer, string trumpCard)
+        {
+            try
+            {
+                string message = $"TURN:{currentPlayer}:{trumpCard}";
+                await Task.Delay(300); 
+
+                //MessageBox.Show(message);
+                byte[] data = Encoding.UTF8.GetBytes(message);
+
+                foreach (var client in clients)
+                {
+                    if (client.Connected)
+                    {
+                        await client.GetStream().WriteAsync(data, 0, data.Length);
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка рассылки хода: {ex.Message}");
             }
         }
         private void SendRejectionMessage(TcpClient client, string message)
