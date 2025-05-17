@@ -15,7 +15,7 @@ namespace Liars_deck.classes
         private Random random = new Random();
         private string remainingDeck;
         public string trump_card;
-        private string current_cards;
+        public string current_cards;
         public bool isPlaying = false;
         public Dictionary<int, string> queue = new Dictionary<int, string>();
         public int currentPlayerIndex;      
@@ -152,7 +152,7 @@ namespace Liars_deck.classes
             }
 
             // Рассылка для клиентов
-            room.server?.BroadcastCardsToCenter(cardsToSend.ToString());
+            await room.server?.BroadcastCardsToCenter(cardsToSend.ToString());
             _ = room.server?.BroadcastPlayersCards(players);
             
             current_cards = cardsToSend.ToString();
@@ -170,7 +170,7 @@ namespace Liars_deck.classes
                 await room.server.BroadcastTurnInfo(room.currentTurn, trump_card);
             }   
         }
-        public void Update(List<int> cardsIndexes, string player = null)
+        public async void Update(List<int> cardsIndexes, string player = null)
         {
             // Определяем, чей ход обрабатываем
             string currentPlayer = player ?? queue[currentPlayerIndex];
@@ -186,7 +186,8 @@ namespace Liars_deck.classes
                     players[currentPlayer] = players[currentPlayer].Remove(index, 1);
                 }
             }
-
+            
+            current_cards = cardsToSend.ToString();
             // Обновляем UI хоста (если это его карты)
             if (currentPlayer == room.CurrentUsername)
             {
@@ -198,14 +199,14 @@ namespace Liars_deck.classes
             {
                 room.ShowCardsInCenter(cardsToSend.ToString());
                 room.UpdateCardsForAllPlayers(players);
-                room.server.BroadcastCardsToCenter(cardsToSend.ToString());
+                await room.server.BroadcastCardsToCenter(cardsToSend.ToString());
                 _ = room.server.BroadcastPlayersCards(players);
             }
 
             // Переключаем очередь на следующего игрока ВНЕ ЗАВИСИМОСТИ ОТ ТОГО, ХОДИЛ ХОСТ ИЛИ КЛИЕНТ
-            currentPlayerIndex = (currentPlayerIndex + 1) % queue.Count;
+            currentPlayerIndex = currentPlayerIndex == room.clientElements.Count ? 1 : currentPlayerIndex + 1;
             room.currentTurn = queue[currentPlayerIndex];
-            room.server?.BroadcastTurnInfo(room.currentTurn, trump_card);
+            await room.server?.BroadcastTurnInfo(room.currentTurn, trump_card);
 
             Application.Current.Dispatcher.Invoke(() => 
             {

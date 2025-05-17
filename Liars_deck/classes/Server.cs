@@ -24,7 +24,7 @@ namespace Liars_deck.classes
         public event Action<string, List<int>> OnClientAction;
         public string hostname;
         private const int MAX_PLAYERS = 4;
-                public void Start(int port, string name)
+        public void Start(int port, string name)
         {
             try
             {
@@ -137,7 +137,7 @@ namespace Liars_deck.classes
                 string message = "CARDS:" + string.Join(";", players.Select(p => $"{p.Key}:{p.Value}"));
                 
                 byte[] data = Encoding.UTF8.GetBytes(message);
-
+                
                 foreach (var client in clients)
                 {
                     if (client.Connected)
@@ -157,7 +157,8 @@ namespace Liars_deck.classes
             {
                 string message = $"CARDS_TO_CENTER:{cards}";
                 byte[] data = Encoding.UTF8.GetBytes(message);
-
+                
+                await Task.Delay(300); 
                 foreach (var client in clients)
                 {
                     if (client.Connected)

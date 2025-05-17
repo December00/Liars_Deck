@@ -213,6 +213,12 @@
             }
             private void CheckButton_Click(object sender, RoutedEventArgs e)
             {
+                if (game.current_cards == null || game.current_cards.Length == 0)
+                {
+                    MessageBox.Show("Нельзя проверять карты, если их ещё не положили");
+                    return;
+                }
+
                 if (game.Check())
                 {
                     MessageBox.Show("Предыдущий игрок не врал!");
