@@ -118,6 +118,7 @@
                 Application.Current.Dispatcher.Invoke(() =>
                 {
                     room.ShowCardsInCenter(cards);
+                    game.current_cards = cards;
                 });
             }
             private void OnTurnChangedHandler(string currentTurn, string trump)
@@ -126,6 +127,7 @@
                 {
                     room.currentTurn = currentTurn;
                     room.currentTrump = GetTrumpCardName(trump);
+                    game.trump_card = trump;
                     room.UpdateTurnInfo();
                     room.TurnInfoText.Text = $"Current: {currentTurn}\nTrump: {room.currentTrump}";
                     if (currentTurn != user.login)
@@ -227,7 +229,7 @@
                 {
                     MessageBox.Show("Предыдущий игрок пытался вас обмануть!");
                 }
-        
+                room.ShowCardsInCenter(game.current_cards, true);
             }
             private async void NextButton_Click(object sender, RoutedEventArgs e)
             {

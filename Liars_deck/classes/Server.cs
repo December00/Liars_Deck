@@ -156,9 +156,11 @@ namespace Liars_deck.classes
             try
             {
                 string message = $"CARDS_TO_CENTER:{cards}";
+                
+                
+                await Task.Delay(500); 
                 byte[] data = Encoding.UTF8.GetBytes(message);
                 
-                await Task.Delay(300); 
                 foreach (var client in clients)
                 {
                     if (client.Connected)

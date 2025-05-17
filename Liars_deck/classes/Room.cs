@@ -292,7 +292,7 @@ public class Room
         }
     }
 
-    public void DrawCardsForPlayer(string username, string cards)
+    public void DrawCardsForPlayer(string username, string cards, bool isCheck = false)
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
@@ -322,7 +322,7 @@ public class Room
                 Tag = "cardsPanel"
             };
 
-            string cardsToShow = (username == CurrentUsername) ? CurrentDeck : new string('x', cards.Length);
+            string cardsToShow = (username == CurrentUsername || isCheck) ? CurrentDeck : new string('x', cards.Length);
 
             for (int i = 0; i < Math.Min(5, cardsToShow.Length); i++)
             {
@@ -401,7 +401,7 @@ public class Room
             image.Margin = selected ? new Thickness(0, -10, 0, 0) : new Thickness(0, 0, 0, 0);
         }
     }
-    public void ShowCardsInCenter(string cards)
+    public void ShowCardsInCenter(string cards, bool isCheck = false)
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
@@ -422,17 +422,35 @@ public class Room
                 VerticalAlignment = VerticalAlignment.Center,
                 Name = "CenterCards"
             };
-
-            foreach (char c in cards)
+            if (isCheck)
             {
-                Image card = new Image
+                foreach (char c in cards)
                 {
-                    Source = new BitmapImage(new Uri("D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\Bluecard.png")),
-                    Width = 80,
-                    Height = 96,
-                    Margin = new Thickness(5)
-                };
-                newPanel.Children.Add(card);
+                    string cardImagePath = GetCardImagePath(c);
+                    Image card = new Image
+                    {
+                        Source = new BitmapImage(new Uri(cardImagePath)),
+                        Width = 80,
+                        Height = 96,
+                        Margin = new Thickness(0, 0, 0, 0),
+                    };
+                    newPanel.Children.Add(card);
+                }
+            }
+            else
+            {
+                foreach (char c in cards)
+                {
+                    Image card = new Image
+                    {
+                        Source = new BitmapImage(
+                            new Uri("D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\Bluecard.png")),
+                        Width = 80,
+                        Height = 96,
+                        Margin = new Thickness(5)
+                    };
+                    newPanel.Children.Add(card);
+                }
             }
 
             Grid.SetRow(newPanel, 1);
