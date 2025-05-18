@@ -28,12 +28,12 @@
             <TextBox x:Name="IPTextBox" 
                 HorizontalAlignment="Left"
                 TextWrapping="Wrap" 
-                Width="280" 
+                Width="240" 
                 Background="Transparent" 
                 Foreground="White" 
                 Height="50" 
                 BorderThickness="0"
-                Margin="20,30,10,0" FontFamily="Arial" FontSize="18"/>
+                Margin="60,30,10,0" FontFamily="Arial" FontSize="18"/>
             <Image x:Name="Enter" 
                 VerticalAlignment="Top"
                 HorizontalAlignment="Right"

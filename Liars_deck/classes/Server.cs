@@ -22,6 +22,7 @@ namespace Liars_deck.classes
         public bool isAcceptingClients = true;
         public event Action<string>? OnClientConnected;
         public event Action<string, List<int>> OnClientAction;
+        public event Action<string> OnCheckRequest;
         public string hostname;
         private const int MAX_PLAYERS = 4;
         public void Start(int port, string name)
@@ -101,6 +102,11 @@ namespace Liars_deck.classes
                         var hostClient = clients.First();
                         byte[] data = Encoding.UTF8.GetBytes(modifiedMessage);
                         hostClient.GetStream().Write(data, 0, data.Length);
+                    }
+                    else if (message.StartsWith("CHECK_REQUEST:"))
+                    {
+                        string username = message.Split(':')[1];
+                        OnCheckRequest?.Invoke(username);
                     }
                 }
                 catch
@@ -196,6 +202,26 @@ namespace Liars_deck.classes
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка рассылки хода: {ex.Message}");
+            }
+        }
+        public async Task BroadcastCheckResult(string liarUsername, string cards, bool isHonest)
+        {
+            try
+            {
+                string message = $"CHECK_RESULT:{liarUsername}:{cards}:{isHonest}";
+                byte[] data = Encoding.UTF8.GetBytes(message);
+        
+                foreach (var client in clients)
+                {
+                    if (client.Connected)
+                    {
+                        await client.GetStream().WriteAsync(data, 0, data.Length);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка рассылки результата проверки: {ex.Message}");
             }
         }
         private void SendRejectionMessage(TcpClient client, string message)

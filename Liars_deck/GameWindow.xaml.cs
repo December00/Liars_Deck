@@ -14,6 +14,7 @@
             private Client client;
             private User user;
             private bool isHost;
+            List<string> allPlayers;
             public GameWindow(Server server, User user)
             {
                 InitializeComponent();
@@ -30,7 +31,9 @@
                 this.client.OnCardsReceived += OnCardsReceivedHandler;
                 this.client.OnCardsToCenter += OnCardsToCenterHandler;
                 this.client.OnTurnChanged += OnTurnChangedHandler;
+                this.client.OnCheckResultReceived += OnCheckResultReceivedHandler;
                 this.room.server.OnClientAction += HandlePlayerAction;
+                this.room.server.OnCheckRequest += HandleCheckRequest;
                 IPTextBox.Text = "127.0.0.1";
                 IPTextBox.IsEnabled = false;
                 Connect();
@@ -59,6 +62,7 @@
                 this.client.OnCardsReceived += OnCardsReceivedHandler;
                 this.client.OnCardsToCenter += OnCardsToCenterHandler;
                 this.client.OnTurnChanged += OnTurnChangedHandler;
+                this.client.OnCheckResultReceived += OnCheckResultReceivedHandler;
                 this.game = new Game(room);
                 room.NextButton.Click += NextButton_Click;
                 room.CheckButton.Click += CheckButton_Click;
@@ -144,20 +148,51 @@
                         room.CheckButton.Foreground = Brushes.White;
                         room.NextButton.Foreground = Brushes.White;
                     }
+                    allPlayers = room.clientElements.Keys.ToList();
+                    foreach (var player in allPlayers)
+                    {
+                        if (currentTurn == player)
+                        {
+                            room.clientElements[player].Item1.Fill =  new SolidColorBrush(Color.FromRgb(0x32, 0x32, 0x32));
+                        }
+                        else
+                        {
+                            room.clientElements[player].Item1.Fill =  new SolidColorBrush(Color.FromRgb(0x42, 0x42, 0x42));
+                        }
+                    }
                 });
                 
+            }
+            private void OnCheckResultReceivedHandler(string liarUsername, string cards, bool isHonest)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    room.ShowCardsInCenter(cards, true, liarUsername, isHonest);
+                    game.HandleCheckResult(liarUsername);
+                    room.NextButton.IsEnabled = false;
+                    room.CheckButton.IsEnabled = false;
+                    room.CheckButton.Foreground = Brushes.Gray;
+                    room.NextButton.Foreground = Brushes.Gray;
+                    if (isHonest)
+                    {
+                        room.StartButton.Foreground = Brushes.White;
+                        room.StartButton.IsEnabled = true;
+                    }
+                });
             }
             private void HandlePlayerAction(string username, List<int> cards)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    // Проверяем, что ход текущего игрока совпадает с отправителем
                     if (game.queue[game.currentPlayerIndex] == username)
                     {
-                        // Обновляем карты игрока
                         game.Update(cards, username);
                     }
                 });
+            }
+            private void HandleCheckRequest(string username)
+            {
+                ProcessCheck();
             }
             private string GetTrumpCardName(string trump)
             {
@@ -206,6 +241,7 @@
                 {
                     room.CurrentDeck = game.GetPlayersHands()[user.login];
                     room.StartButton.IsEnabled = false;
+                    room.StartButton.Foreground = Brushes.Gray;
                     room.UpdateAllPlayersCards(game.GetPlayersHands());
                     room.NextButton.IsEnabled = true;
                     room.NextButton.Foreground = Brushes.White;
@@ -221,15 +257,27 @@
                     return;
                 }
 
-                if (game.Check())
+                if (isHost)
                 {
-                    MessageBox.Show("Предыдущий игрок не врал!");
+                    ProcessCheck();
                 }
                 else
                 {
-                    MessageBox.Show("Предыдущий игрок пытался вас обмануть!");
+                    client.WriteAsync($"CHECK_REQUEST:{user.login}");
                 }
-                room.ShowCardsInCenter(game.current_cards, true);
+            }
+            private void ProcessCheck()
+            {
+                bool checkResult = game.Check();
+                string liarUsername = game.queue[game.currentPlayerIndex - 1];
+    
+                room.ShowCardsInCenter(game.current_cards, true, liarUsername, checkResult);
+                game.HandleCheckResult(checkResult ? "no_liar" : liarUsername);
+
+                if (isHost)
+                {
+                    room.server.BroadcastCheckResult(liarUsername, game.current_cards, checkResult);
+                }
             }
             private async void NextButton_Click(object sender, RoutedEventArgs e)
             {

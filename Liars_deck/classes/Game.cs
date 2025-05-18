@@ -31,8 +31,8 @@ namespace Liars_deck.classes
             if (allPlayers.Count > 1)
             {
                 isPlaying = true;
-                room.StartButton.Foreground = Brushes.Gray;
                 room.InitializeTurnInfo();
+                room.server.StopAcceptingClients();
                 List<char> deckLetters = new List<char>(remainingDeck);
                 int i = 1;
                 foreach (string player in allPlayers)
@@ -202,8 +202,7 @@ namespace Liars_deck.classes
                 await room.server.BroadcastCardsToCenter(cardsToSend.ToString());
                 _ = room.server.BroadcastPlayersCards(players);
             }
-
-            // Переключаем очередь на следующего игрока ВНЕ ЗАВИСИМОСТИ ОТ ТОГО, ХОДИЛ ХОСТ ИЛИ КЛИЕНТ
+            
             currentPlayerIndex = currentPlayerIndex == room.clientElements.Count ? 1 : currentPlayerIndex + 1;
             room.currentTurn = queue[currentPlayerIndex];
             await room.server?.BroadcastTurnInfo(room.currentTurn, trump_card);
@@ -212,6 +211,28 @@ namespace Liars_deck.classes
             {
                 room.UpdateTurnInfo();
             });
+        }
+        public void HandleCheckResult(string liar)
+        {
+            if (liar != "no_liar")
+            {
+                // Удаляем проигравшего игрока
+                players.Remove(liar);
+                queue = queue.Where(p => p.Value != liar)
+                    .ToDictionary(p => p.Key, p => p.Value);
+
+                // Обновляем индексы очереди
+                var newQueue = new Dictionary<int, string>();
+                int index = 1;
+                foreach (var player in queue.Values)
+                {
+                    newQueue[index++] = player;
+                }
+                queue = newQueue;
+
+                currentPlayerIndex = currentPlayerIndex >= queue.Count ? 1 : currentPlayerIndex;
+            }
+            // Не очищаем current_cards, чтобы карты оставались видны
         }
     }
 }

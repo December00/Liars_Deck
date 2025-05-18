@@ -13,6 +13,7 @@
         public event Action<Dictionary<string, string>> OnCardsReceived;
         public event Action<string> OnCardsToCenter;
         public event Action<string, string> OnTurnChanged;
+        public event Action<string, string, bool> OnCheckResultReceived; 
         public string current_deck = "";
         public Client(User user)
         {
@@ -34,7 +35,7 @@
             }
             catch (Exception ex)
             {
-                throw new Exception($"Ошибка подключения: {ex.Message}");
+                MessageBox.Show("Ошибка подключения, возможно игра уже началась");
             }
         }
 
@@ -79,6 +80,14 @@
                     {
                         var parts = message.Substring(5).Split(':');
                         OnTurnChanged?.Invoke(parts[0], parts[1]);
+                    }
+                    else if (message.StartsWith("CHECK_RESULT:"))
+                    {
+                        var parts = message.Split(':');
+                        string liarUsername = parts[1];
+                        string cards = parts[2];
+                        bool isHonest = bool.Parse(parts[3]);
+                        OnCheckResultReceived?.Invoke(liarUsername, cards, isHonest);
                     }
                     else
                     {

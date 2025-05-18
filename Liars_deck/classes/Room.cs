@@ -401,56 +401,64 @@ public class Room
             image.Margin = selected ? new Thickness(0, -10, 0, 0) : new Thickness(0, 0, 0, 0);
         }
     }
-    public void ShowCardsInCenter(string cards, bool isCheck = false)
+    public void ShowCardsInCenter(string cards, bool isCheck = false, string liarUsername = "", bool isHonest = false)
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
-            // Удаляем старые карты
             var centerPanel = gameGrid.Children
                 .OfType<StackPanel>()
                 .FirstOrDefault(sp => sp.Name == "CenterCards");
 
-            if (centerPanel != null)
-            {
-                gameGrid.Children.Remove(centerPanel);
-            }
+            if (centerPanel != null) gameGrid.Children.Remove(centerPanel);
 
             StackPanel newPanel = new StackPanel
             {
-                Orientation = Orientation.Horizontal,
+                Orientation = Orientation.Vertical,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Name = "CenterCards"
             };
+
+            // Панель с картами
+            StackPanel cardsPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            foreach (char c in cards)
+            {
+                string cardImagePath = isCheck ? 
+                    GetCardImagePath(c) : 
+                    "D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\Bluecard.png";
+                
+                Image card = new Image
+                {
+                    Source = new BitmapImage(new Uri(cardImagePath)),
+                    Width = 80,
+                    Height = 96,
+                    Margin = new Thickness(5)
+                };
+                cardsPanel.Children.Add(card);
+            }
+            newPanel.Children.Add(cardsPanel);
+
+            // Текст с результатом
             if (isCheck)
             {
-                foreach (char c in cards)
+                string resultText = isHonest ? 
+                    $"Игрок {liarUsername} честен" : 
+                    $"Игрок {liarUsername} лгал!";
+                
+                TextBlock resultBlock = new TextBlock
                 {
-                    string cardImagePath = GetCardImagePath(c);
-                    Image card = new Image
-                    {
-                        Source = new BitmapImage(new Uri(cardImagePath)),
-                        Width = 80,
-                        Height = 96,
-                        Margin = new Thickness(0, 0, 0, 0),
-                    };
-                    newPanel.Children.Add(card);
-                }
-            }
-            else
-            {
-                foreach (char c in cards)
-                {
-                    Image card = new Image
-                    {
-                        Source = new BitmapImage(
-                            new Uri("D:\\sharpCodes\\Liars_deck\\Liars_deck\\resources\\Bluecard.png")),
-                        Width = 80,
-                        Height = 96,
-                        Margin = new Thickness(5)
-                    };
-                    newPanel.Children.Add(card);
-                }
+                    Text = resultText,
+                    Foreground = Brushes.White,
+                    FontSize = 20,
+                    FontWeight = FontWeights.Bold,
+                    Margin = new Thickness(0, 10, 0, 0)
+                };
+                newPanel.Children.Add(resultBlock);
             }
 
             Grid.SetRow(newPanel, 1);
