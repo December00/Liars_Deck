@@ -137,26 +137,37 @@ namespace Liars_deck.classes
                     players[currentPlayer] = players[currentPlayer].Remove(index, 1);
                 }
             }
-
-            // Явное обновление CurrentDeck для хоста
+            
             if (currentPlayer == room.CurrentUsername)
             {
                 room.CurrentDeck = players[currentPlayer];
             }
 
-            // Локальное обновление для хоста
             if (room.server != null)
             {
                 room.ShowCardsInCenter(cardsToSend.ToString());
-                room.UpdateCardsForAllPlayers(players); // Важное изменение!
+                room.UpdateCardsForAllPlayers(players);
             }
 
-            // Рассылка для клиентов
             await room.server?.BroadcastCardsToCenter(cardsToSend.ToString());
             _ = room.server?.BroadcastPlayersCards(players);
             
             current_cards = cardsToSend.ToString();
             currentPlayerIndex = currentPlayerIndex == room.clientElements.Count ? 1 : currentPlayerIndex + 1;
+            while (players[queue[currentPlayerIndex]] == "")
+            {
+                players.Remove(queue[currentPlayerIndex]);
+                queue.Remove(currentPlayerIndex);
+                var newQueue = new Dictionary<int, string>();
+                int index = 1;
+                foreach (var player in queue.Values)
+                {
+                    newQueue[index++] = player;
+                }
+                queue = newQueue;
+                
+            }
+            
             room.currentTurn = queue[currentPlayerIndex]; 
             room.currentTrump = GetTrumpCardName(this.trump_card);
 
@@ -172,10 +183,8 @@ namespace Liars_deck.classes
         }
         public async void Update(List<int> cardsIndexes, string player = null)
         {
-            // Определяем, чей ход обрабатываем
             string currentPlayer = player ?? queue[currentPlayerIndex];
 
-            // Удаляем карты из колоды игрока
             StringBuilder cardsToSend = new StringBuilder();
             var sortedIndexes = cardsIndexes.OrderByDescending(i => i).ToList();
             foreach (int index in sortedIndexes)
@@ -188,13 +197,11 @@ namespace Liars_deck.classes
             }
             
             current_cards = cardsToSend.ToString();
-            // Обновляем UI хоста (если это его карты)
             if (currentPlayer == room.CurrentUsername)
             {
                 room.CurrentDeck = players[currentPlayer];
             }
 
-            // Рассылаем изменения всем игрокам
             if (room.server != null)
             {
                 room.ShowCardsInCenter(cardsToSend.ToString());
@@ -216,12 +223,10 @@ namespace Liars_deck.classes
         {
             if (liar != "no_liar")
             {
-                // Удаляем проигравшего игрока
                 players.Remove(liar);
                 queue = queue.Where(p => p.Value != liar)
                     .ToDictionary(p => p.Key, p => p.Value);
 
-                // Обновляем индексы очереди
                 var newQueue = new Dictionary<int, string>();
                 int index = 1;
                 foreach (var player in queue.Values)
@@ -232,7 +237,6 @@ namespace Liars_deck.classes
 
                 currentPlayerIndex = currentPlayerIndex >= queue.Count ? 1 : currentPlayerIndex;
             }
-            // Не очищаем current_cards, чтобы карты оставались видны
         }
     }
 }
