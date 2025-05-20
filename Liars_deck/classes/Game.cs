@@ -74,6 +74,39 @@ namespace Liars_deck.classes
                 return false;
             }
         }
+        public async void Restart()
+        {
+            remainingDeck = "jjaaaaaakkkkkkqqqqqq";
+            List<string> allPlayers = room.clientElements.Keys.ToList();
+            List<char> deckLetters = new List<char>(remainingDeck);
+            int i = 1;
+            foreach (string player in allPlayers)
+            {
+
+                if (deckLetters.Count < 5) throw new InvalidOperationException("Недостаточно карт!");
+                players[player] = GetRandomCards(deckLetters, 5);
+                queue[i] = player;
+                i++;
+            }
+            trump_card = GetTrumpCard();
+            room.currentTrump = GetTrumpCardName(trump_card);
+            current_cards = "";
+            currentPlayerIndex = 1;
+            room.selectedCardIndices[queue[1]] = new List<int>();
+            
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                room.UpdateTurnInfo();
+            });
+
+            _ = room.server.BroadcastPlayersCards(players);
+            room.UpdateCardsForAllPlayers(players);
+            room.server?.BroadcastTurnInfo(
+                queue[currentPlayerIndex],
+                trump_card.ToString()
+            );
+            await room.server.BroadcastCardsToCenter("");
+        }
         private string GetTrumpCardName(string trump)
         {
             return trump.ToLower() switch

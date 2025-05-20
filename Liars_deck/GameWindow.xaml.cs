@@ -173,10 +173,12 @@
                     room.CheckButton.IsEnabled = false;
                     room.CheckButton.Foreground = Brushes.Gray;
                     room.NextButton.Foreground = Brushes.Gray;
-                    if (isHonest)
+                    if (isHost)
                     {
+                        
                         room.StartButton.Foreground = Brushes.White;
                         room.StartButton.IsEnabled = true;
+                        
                     }
                 });
             }
@@ -217,6 +219,8 @@
                 {
                     MessageBox.Show($"Ошибка подключения: {ex.Message}", "Ошибка",
                         MessageBoxButton.OK, MessageBoxImage.Error);
+                Enter.IsEnabled = true;
+                IPTextBox.IsEnabled = true;
                 }
             }
 
@@ -233,10 +237,23 @@
             {
                 Application.Current.Shutdown();
             }
-            private void StartButton_Click(object sender, RoutedEventArgs e)
+        private void StartButton_Click(object sender, RoutedEventArgs e)
+        {
+            
+            if (game.isPlaying)
             {
-                if (game != null && game.isPlaying) return;
-
+                game.Restart();
+                room.CurrentDeck = game.GetPlayersHands()[user.login];
+                room.StartButton.IsEnabled = false;
+                room.StartButton.Foreground = Brushes.Gray;
+                room.UpdateAllPlayersCards(game.GetPlayersHands());
+                room.NextButton.IsEnabled = true;
+                room.NextButton.Foreground = Brushes.White;
+                room.CheckButton.IsEnabled = true;
+                room.CheckButton.Foreground = Brushes.White;
+            }
+            else
+            {
                 if (game.Start())
                 {
                     room.CurrentDeck = game.GetPlayersHands()[user.login];
@@ -249,6 +266,7 @@
                     room.CheckButton.Foreground = Brushes.White;
                 }
             }
+        }
             private void CheckButton_Click(object sender, RoutedEventArgs e)
             {
                 if (game.current_cards == null || game.current_cards.Length == 0)
@@ -269,7 +287,8 @@
             private void ProcessCheck()
             {
                 bool checkResult = game.Check();
-                string liarUsername = game.queue[game.currentPlayerIndex - 1];
+                int index = game.currentPlayerIndex - 1 == 0 ? game.queue.Count : game.currentPlayerIndex - 1;
+                string liarUsername = game.queue[index];
     
                 room.ShowCardsInCenter(game.current_cards, true, liarUsername, checkResult);
                 game.HandleCheckResult(checkResult ? "no_liar" : liarUsername);

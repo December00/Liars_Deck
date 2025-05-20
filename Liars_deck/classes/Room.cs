@@ -285,7 +285,6 @@ public class Room
         // Обновляем локально
         UpdateCardsForAllPlayers(playersCards);
 
-        // Рассылаем клиентам только если мы хост
         if (server != null)
         {
             _ = server.BroadcastPlayersCards(playersCards);
