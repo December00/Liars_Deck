@@ -1,0 +1,17 @@
+﻿<Window x:Class="Liars_deck.TextWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Правила" 
+        WindowStartupLocation="CenterScreen"
+        SizeToContent="WidthAndHeight"
+        Background="#424242" 
+        Foreground="White">
+    <StackPanel Margin="20">
+        <TextBlock 
+                    x:Name="TextBlock"
+                    TextWrapping="Wrap" MaxWidth="400" 
+                    Text=""/>
+        <Button Content="OK" Width="80" Margin="0,10,0,0" 
+                Click="CloseButton_Click"/>
+    </StackPanel>
+</Window>

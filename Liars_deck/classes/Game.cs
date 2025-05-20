@@ -271,5 +271,27 @@ namespace Liars_deck.classes
                 currentPlayerIndex = currentPlayerIndex >= queue.Count ? 1 : currentPlayerIndex;
             }
         }
+        public void HandlePlayerDisconnect(string username)
+        {
+            if (players.ContainsKey(username))
+            {
+                players.Remove(username);
+                queue = queue.Where(p => p.Value != username)
+                           .ToDictionary(p => p.Key, p => p.Value);
+
+                var newQueue = new Dictionary<int, string>();
+                int index = 1;
+                foreach (var player in queue.Values)
+                {
+                    newQueue[index++] = player;
+                }
+                queue = newQueue;
+
+                if (currentPlayerIndex > queue.Count)
+                {
+                    currentPlayerIndex = 1;
+                }
+            }
+        }
     }
 }

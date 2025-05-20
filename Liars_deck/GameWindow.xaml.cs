@@ -14,7 +14,8 @@
             private Client client;
             private User user;
             private bool isHost;
-            List<string> allPlayers;
+            private List<string> allPlayers;
+            private string hostName;
             public GameWindow(Server server, User user)
             {
                 InitializeComponent();
@@ -32,6 +33,7 @@
                 this.client.OnCardsToCenter += OnCardsToCenterHandler;
                 this.client.OnTurnChanged += OnTurnChangedHandler;
                 this.client.OnCheckResultReceived += OnCheckResultReceivedHandler;
+                this.client.OnDisconnected += HandleDisconnection;
                 this.room.server.OnClientAction += HandlePlayerAction;
                 this.room.server.OnCheckRequest += HandleCheckRequest;
                 IPTextBox.Text = "127.0.0.1";
@@ -63,6 +65,7 @@
                 this.client.OnCardsToCenter += OnCardsToCenterHandler;
                 this.client.OnTurnChanged += OnTurnChangedHandler;
                 this.client.OnCheckResultReceived += OnCheckResultReceivedHandler;
+                this.client.OnDisconnected += HandleDisconnection;
                 this.game = new Game(room);
                 room.NextButton.Click += NextButton_Click;
                 room.CheckButton.Click += CheckButton_Click;
@@ -72,16 +75,46 @@
                 room.NextButton.Foreground = Brushes.Gray;
             }
 
-            
-            private void OnPlayerConnectedHandler(string username)
+
+            private void OnPlayerConnectedHandler(string message)
             {
-                if (username.StartsWith("PLAYER_TURN:")) return;
+                if (message.StartsWith("PLAYER_DISCONNECTED:"))
+                {
+                    string username = message.Substring(20);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        room.RemovePlayerUI(username);
+                        game.HandlePlayerDisconnect(username);
+                        if (hostName == null | username == hostName)
+                        {
+                            MessageBox.Show("Соединение с сервером потеряно, ваш сеанс будет окончен");
+                            Application.Current.Shutdown(0);
+                        }
+                        if (isHost)
+                        {
+                            if (room.clientElements.Count > 1)
+                            {
+                                game.Restart();
+                            }
+                            else
+                            {
+                                MessageBox.Show("Все игроки покинули комнату, ваш сеанс будет окончен");
+                                Application.Current.Shutdown(0);
+                            }
+                        }
+
+                        TextWindow textWindow =
+                            new TextWindow("Игра была начата заново, так как игрок " + username + " отключился");
+                        textWindow.Show();
+                    });
+                    return;
+                }
 
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (!room.clientElements.ContainsKey(username))
+                    if (!room.clientElements.ContainsKey(message))
                     {
-                        room.AddClientUI(username);
+                        room.AddClientUI(message);
                     }
                 });
             }
@@ -160,6 +193,11 @@
                             room.clientElements[player].Item1.Fill =  new SolidColorBrush(Color.FromRgb(0x42, 0x42, 0x42));
                         }
                     }
+
+                    if (hostName == null)
+                    {
+                        hostName = currentTurn;
+                    }
                 });
                 
             }
@@ -167,6 +205,7 @@
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
+
                     room.ShowCardsInCenter(cards, true, liarUsername, isHonest);
                     game.HandleCheckResult(liarUsername);
                     room.NextButton.IsEnabled = false;
@@ -182,7 +221,16 @@
                     }
                 });
             }
-            private void HandlePlayerAction(string username, List<int> cards)
+            private void HandleDisconnection()
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    TextWindow textWindow = new TextWindow("Соединение с сервером потеряно");
+                    textWindow.Show();
+                    Close();
+                });
+            }
+        private void HandlePlayerAction(string username, List<int> cards)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -233,9 +281,13 @@
 
             
 
-            private void Exit_MouseDown(object sender, MouseButtonEventArgs e)
+            private async void Exit_MouseDown(object sender, MouseButtonEventArgs e)
             {
-                Application.Current.Shutdown();
+                if (isHost)
+                {
+                    await room.server.BroadcastPlayerDisconnected(user.login);
+                }
+                Application.Current.Shutdown(0);
             }
         private void StartButton_Click(object sender, RoutedEventArgs e)
         {

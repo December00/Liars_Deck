@@ -13,8 +13,10 @@
         public event Action<Dictionary<string, string>> OnCardsReceived;
         public event Action<string> OnCardsToCenter;
         public event Action<string, string> OnTurnChanged;
-        public event Action<string, string, bool> OnCheckResultReceived; 
+        public event Action<string, string, bool> OnCheckResultReceived;
+        public event Action OnDisconnected;
         public string current_deck = "";
+
         public Client(User user)
         {
             this.user = user;
@@ -96,6 +98,7 @@
                 }
                 catch
                 {
+                    OnDisconnected?.Invoke();
                     break;
                 }
             }
@@ -112,7 +115,7 @@
         private void Disconnect()
         {
             stream?.Close();
-            client?.Close();
-            MessageBox.Show("Комната заполнена");
-        }
+            client?.Close(); 
+            OnDisconnected?.Invoke();
+    }
     }

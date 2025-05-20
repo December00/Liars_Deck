@@ -17,11 +17,12 @@ namespace Liars_deck
     /// <summary>
     /// Логика взаимодействия для RulesWindow.xaml
     /// </summary>
-    public partial class RulesWindow : Window
+    public partial class TextWindow : Window
     {
-        public RulesWindow()
+        public TextWindow(string text)
         {
             InitializeComponent();
+            this.TextBlock.Text = text;
         }
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {

@@ -174,7 +174,28 @@ public class Room
         
         });
     }
+    public void RemovePlayerUI(string username)
+    {
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            if (clientElements.TryGetValue(username, out var elements))
+            {
+                gameGrid.Children.Remove(elements.Item1);
+                gameGrid.Children.Remove(elements.Item2);
+                clientElements.Remove(username);
 
+                var panels = gameGrid.Children.OfType<StackPanel>()
+                    .Where(sp => Grid.GetRow(sp) == Grid.GetRow(elements.Item1) &&
+                                Grid.GetColumn(sp) == Grid.GetColumn(elements.Item1))
+                    .ToList();
+
+                foreach (var panel in panels)
+                {
+                    gameGrid.Children.Remove(panel);
+                }
+            }
+        });
+    }
     private Rectangle CreateClientRectangle()
     {
         return new Rectangle

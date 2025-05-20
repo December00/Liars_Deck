@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySqlX.XDevAPI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -111,6 +112,7 @@ namespace Liars_deck.classes
                 }
                 catch
                 {
+                    RemoveClient(newClient);
                     return;
                 }
             }
@@ -224,6 +226,23 @@ namespace Liars_deck.classes
                 MessageBox.Show($"Ошибка рассылки результата проверки: {ex.Message}");
             }
         }
+        public async Task BroadcastPlayerDisconnected(string username)
+        {
+            try
+            {
+                string message = $"PLAYER_DISCONNECTED:{username}";
+                byte[] data = Encoding.UTF8.GetBytes(message);
+
+                foreach (var c in clients.ToList())
+                {
+                    if (c.Connected)
+                    {
+                        await c.GetStream().WriteAsync(data, 0, data.Length);
+                    }
+                }
+            }
+            catch { }
+        }
         private void SendRejectionMessage(TcpClient client, string message)
         {
             try
@@ -233,6 +252,16 @@ namespace Liars_deck.classes
                 client.Close();
             }
             catch { }
+        }
+        private void RemoveClient(TcpClient client)
+        {
+            if (clientUsers.TryGetValue(client, out string username))
+            {
+                clientUsers.Remove(client);
+                clients.Remove(client);
+                _ = BroadcastPlayerDisconnected(username);
+            }
+            client.Close();
         }
     }
 }
