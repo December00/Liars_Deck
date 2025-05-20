@@ -48,5 +48,11 @@ namespace Liars_deck
             this.Close();
             room.Show();
         }
+
+        private void RulesButton_Click(object sender, RoutedEventArgs e)
+        {
+            RulesWindow rulesWindow = new RulesWindow();
+            rulesWindow.Show();
+        }
     }
 }

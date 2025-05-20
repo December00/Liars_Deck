@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="background.jfif" />
       <None Remove="resources\app_icon.png" />
       <None Remove="resources\Bluecard.png" />
       <None Remove="resources\cardsicon.png" />
@@ -18,7 +19,6 @@
       <None Remove="resources\joker.png" />
       <None Remove="resources\king.png" />
       <None Remove="resources\queen.png" />
-      <None Remove="Покер фон стола в зеленый цвет_ _ Премиум векторы.jfif" />
     </ItemGroup>
 
     <ItemGroup>
@@ -52,7 +52,7 @@
       <Resource Include="resources\queen.png">
         <CopyToOutputDirectory>Never</CopyToOutputDirectory>
       </Resource>
-      <Resource Include="Покер фон стола в зеленый цвет_ _ Премиум векторы.jfif" />
+      <Resource Include="resources\background.jfif" />
     </ItemGroup>
 
     <ItemGroup>

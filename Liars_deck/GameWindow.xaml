@@ -11,7 +11,7 @@
         Title="GameWindow" Height="1080" Width="1920">
     <Grid x:Name="MainGrid">
         <Grid.Background>
-            <ImageBrush ImageSource="/Покер фон стола в зеленый цвет_ _ Премиум векторы.jfif"/>
+            <ImageBrush ImageSource="resources/background.jfif"/>
         </Grid.Background>
         <Grid VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20,10,0,0">
             <Rectangle 
