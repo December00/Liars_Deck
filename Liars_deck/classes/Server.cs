@@ -24,15 +24,13 @@ namespace Liars_deck.classes
         public event Action<string>? OnClientConnected;
         public event Action<string, List<int>> OnClientAction;
         public event Action<string> OnCheckRequest;
-        public string hostname;
         private const int MAX_PLAYERS = 4;
-        public void Start(int port, string name)
+        public void Start(int port)
         {
             try
             {
                 listener = new TcpListener(ip, port);
                 listener.Start();
-                this.hostname = name;
                 Task.Run(() => AcceptClients());
             }
             catch

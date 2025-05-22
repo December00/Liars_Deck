@@ -24,7 +24,7 @@
                 this.isHost = true;
                 this.room = new Room(MainGrid) { CurrentUsername = user.login };
                 this.room.server = server;
-                this.room.server.Start(8000, user.login);
+                this.room.server.Start(8000);
                 this.room.AddHostPlayer(user.login);
                 room.InitializeButtons();
                 this.client.OnPlayerConnected += OnPlayerConnectedHandler;
@@ -156,6 +156,8 @@
                 {
                     room.ShowCardsInCenter(cards);
                     game.current_cards = cards;
+                    if (room.selectedCardIndices.ContainsKey(user.login))
+                        room.selectedCardIndices[user.login].Clear();
                 });
             }
             private void OnTurnChangedHandler(string currentTurn, string trump)
@@ -166,7 +168,7 @@
                     room.currentTrump = GetTrumpCardName(trump);
                     game.trump_card = trump;
                     room.UpdateTurnInfo();
-                    room.TurnInfoText.Text = $"Current: {currentTurn}\nTrump: {room.currentTrump}";
+                    room.TurnInfoText.Text = room.currentTrump;
                     if (currentTurn != user.login)
                     {
                         room.NextButton.IsEnabled = false;
@@ -186,7 +188,7 @@
                     {
                         if (currentTurn == player)
                         {
-                            room.clientElements[player].Item1.Fill =  new SolidColorBrush(Color.FromRgb(0x32, 0x32, 0x32));
+                            room.clientElements[player].Item1.Fill =  new SolidColorBrush(Color.FromRgb(0x16, 0x16, 0x16 ));
                         }
                         else
                         {
@@ -199,7 +201,6 @@
                         hostName = currentTurn;
                     }
                 });
-                
             }
             private void OnCheckResultReceivedHandler(string liarUsername, string cards, bool isHonest)
             {

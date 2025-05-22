@@ -11,7 +11,6 @@ namespace Liars_deck.classes
     {
         private Room room;
         private Dictionary<string, string> players = new Dictionary<string, string>();
-        private Dictionary<string, int> lives = new Dictionary<string, int>();
         private Random random = new Random();
         private string remainingDeck;
         public string trump_card;

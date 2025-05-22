@@ -49,26 +49,55 @@ public class Room
 
     public void InitializeTurnInfo()
     {
-        TurnInfoText = new TextBlock
+        Grid turnInfoContainer = new Grid
         {
-            Foreground = Brushes.White,
-            FontSize = 20,
+            Width = 120,
+            Height = 45,
             HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top,
-            Margin = new Thickness(0, 10, 20, 0),
-            FontWeight = FontWeights.Bold,
+            Margin = new Thickness(0, 20, 20, 0)
         };
-        Grid.SetRow(TurnInfoText, 0);
-        Grid.SetColumn(TurnInfoText, 3);
-        gameGrid.Children.Add(TurnInfoText);
+
+        Rectangle turnRectangle = new Rectangle
+        {
+            Fill = new SolidColorBrush(Color.FromRgb(0x42, 0x42, 0x42)),
+            RadiusX = 10,
+            RadiusY = 10,
+            Effect = new DropShadowEffect
+            {
+                Color = Colors.Black,
+                Direction = 320,
+                ShadowDepth = 10,
+                BlurRadius = 20,
+                Opacity = 0.7
+            }
+        };
+
+        TurnInfoText = new TextBlock
+        {
+            Text = "Козырь",
+            Foreground = Brushes.White,
+            FontSize = 24,
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            FontWeight = FontWeights.Bold,
+            TextAlignment = TextAlignment.Center
+        };
+
+        turnInfoContainer.Children.Add(turnRectangle);
+        turnInfoContainer.Children.Add(TurnInfoText);
+
+        Grid.SetRow(turnInfoContainer, 0);
+        Grid.SetColumn(turnInfoContainer, 3);
+        gameGrid.Children.Add(turnInfoContainer);
     }
 
     public void UpdateTurnInfo()
     {
         Application.Current.Dispatcher.Invoke(() =>
         {
-        
-            TurnInfoText.Text = $"Current: {currentTurn}\nTrump: {currentTrump}";
+            
+            TurnInfoText.Text = currentTrump;
             TurnInfoText.Visibility = Visibility.Visible;
         });
     }
