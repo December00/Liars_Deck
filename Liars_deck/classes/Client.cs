@@ -3,6 +3,8 @@
     using System.Text;
     using System.Windows;
 
+namespace Liars_deck.classes
+{
     public class Client
     {
         private TcpClient client;
@@ -109,13 +111,14 @@
         {
             byte[] data = Encoding.UTF8.GetBytes(message);
             await stream.WriteAsync(data, 0, data.Length);
-            
-           
+
+
         }
         private void Disconnect()
         {
             stream?.Close();
-            client?.Close(); 
+            client?.Close();
             OnDisconnected?.Invoke();
+        }
     }
-    }
+}

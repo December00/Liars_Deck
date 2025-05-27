@@ -74,8 +74,8 @@
                 room.CheckButton.Foreground = Brushes.Gray;
                 room.NextButton.Foreground = Brushes.Gray;
             }
-
-
+            
+            
             private void OnPlayerConnectedHandler(string message)
             {
                 if (message.StartsWith("PLAYER_DISCONNECTED:"))
@@ -85,27 +85,43 @@
                     {
                         room.RemovePlayerUI(username);
                         game.HandlePlayerDisconnect(username);
-                        if (hostName == null | username == hostName)
+                        if (hostName != null)
                         {
-                            MessageBox.Show("Соединение с сервером потеряно, ваш сеанс будет окончен");
-                            Application.Current.Shutdown(0);
-                        }
-                        if (isHost)
-                        {
-                            if (room.clientElements.Count > 1)
+                            if (username == hostName)
                             {
-                                game.Restart();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Все игроки покинули комнату, ваш сеанс будет окончен");
+                                MessageBox.Show("Соединение с сервером потеряно, ваш сеанс будет окончен");
                                 Application.Current.Shutdown(0);
                             }
                         }
+                        else
+                        {
+                            List<string> Players = room.clientElements.Keys.ToList();
+                            if (username == Players[0])
+                            {
 
-                        TextWindow textWindow =
-                            new TextWindow("Игра была начата заново, так как игрок " + username + " отключился");
-                        textWindow.Show();
+                            }
+                        }
+                        if (isHost)
+                        {
+                            if (game.isPlaying)
+                            {
+                                if (room.clientElements.Count > 1)
+                                {
+                                    game.Restart();
+                                }
+                                else
+                                {
+                                    MessageBox.Show("Все игроки покинули комнату, ваш сеанс будет окончен");
+                                    Application.Current.Shutdown(0);
+                                }
+                            }
+                        }
+                        if (game.trump_card != null)    
+                        {
+                            TextWindow textWindow =
+                                new TextWindow("Игра была начата заново, так как игрок " + username + " отключился");
+                            textWindow.Show();
+                        }
                     });
                     return;
                 }
@@ -324,7 +340,8 @@
             {
                 if (game.current_cards == null || game.current_cards.Length == 0)
                 {
-                    MessageBox.Show("Нельзя проверять карты, если их ещё не положили");
+                    TextWindow textWindow = new TextWindow("Нельзя проверять карты, если их ещё не положили");
+                    textWindow.Show();
                     return;
                 }
 
@@ -369,7 +386,12 @@
                     room.selectedCardIndices[user.login].Clear();
 
                 }
-                else MessageBox.Show("Для завершения хода нужно либо выбрать от 1 до 3 карт, либо проверить карты предыдущего игрока");
+                else
+                {
+                    TextWindow textWindow = new TextWindow("Для завершения хода нужно либо выбрать от 1 до 3 карт, либо проверить карты предыдущего игрока");
+                    textWindow.Show();
+                }
+
                 
                 
             }
