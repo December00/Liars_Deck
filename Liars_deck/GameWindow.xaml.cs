@@ -27,6 +27,8 @@
                     this.room = new Room(MainGrid) { CurrentUsername = user.login };
                     this.room.server = server;
                     this.room.server.Start(8000);
+                    IPTextBox.Text = "127.0.0.1";
+                    //IPTextBox.Text = room.server.ip.ToString();
                     this.room.AddHostPlayer(user.login);
                     room.InitializeButtons();
                     this.client.OnPlayerConnected += OnPlayerConnectedHandler;
@@ -38,7 +40,6 @@
                     this.client.OnDisconnected += HandleDisconnection;
                     this.room.server.OnClientAction += HandlePlayerAction;
                     this.room.server.OnCheckRequest += HandleCheckRequest;
-                    IPTextBox.Text = "127.0.0.1";
                     IPTextBox.IsEnabled = false;
                     Connect();
                     this.game = new Game(room);
@@ -155,7 +156,7 @@
                         }
                     });
                 }
-                private void OnCardsReceivedHandler(Dictionary<string, string> playersCards)
+                private void OnCardsReceivedHandler(Dictionary<string, string> playersCards) 
                 {
                     if (playersCards.TryGetValue(user.login, out string myCards))
                     {

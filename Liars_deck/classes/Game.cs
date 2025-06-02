@@ -185,21 +185,34 @@ namespace Liars_deck.classes
             _ = room.server?.BroadcastPlayersCards(players);
             
             current_cards = cardsToSend.ToString();
-            currentPlayerIndex = currentPlayerIndex == room.clientElements.Count ? 1 : currentPlayerIndex + 1;
-            while (players[queue[currentPlayerIndex]] == "")
+            
+            currentPlayerIndex = currentPlayerIndex >= queue.Count ? 1 : currentPlayerIndex + 1;
+            try
             {
-                players.Remove(queue[currentPlayerIndex]);
-                queue.Remove(currentPlayerIndex);
-                var newQueue = new Dictionary<int, string>();
-                int index = 1;
-                foreach (var player in queue.Values)
+                while (players[queue[currentPlayerIndex]] == "")
                 {
-                    newQueue[index++] = player;
-                }
-                queue = newQueue;
+                    players.Remove(queue[currentPlayerIndex]);
+                    queue.Remove(currentPlayerIndex);
+                    var newQueue = new Dictionary<int, string>();
+                    int index = 1;
+                    foreach (var player in queue.Values)
+                    {
+                        newQueue[index++] = player;
+                    }
+                    queue = newQueue;
                 
+                }
+            }
+            catch
+            {
+                if (currentPlayerIndex > queue.Count)
+                {
+                    currentPlayerIndex = 1;
+                } 
             }
             
+            
+           
             room.currentTurn = queue[currentPlayerIndex]; 
             room.currentTrump = GetTrumpCardName(this.trump_card);
 
@@ -229,10 +242,32 @@ namespace Liars_deck.classes
             }
             
             current_cards = cardsToSend.ToString();
-            if (currentPlayer == room.CurrentUsername)
+            currentPlayerIndex = currentPlayerIndex >= queue.Count ? 1 : currentPlayerIndex + 1;
+            try
             {
-                room.CurrentDeck = players[currentPlayer];
+                while (players[queue[currentPlayerIndex]] == "")
+                {
+                    players.Remove(queue[currentPlayerIndex]);
+                    queue.Remove(currentPlayerIndex);
+                    var newQueue = new Dictionary<int, string>();
+                    int index = 1;
+                    foreach (var oldplayer in queue.Values)
+                    {
+                        newQueue[index++] = oldplayer;
+                    }
+                    queue = newQueue;
+                
+                }
             }
+            catch
+            {
+                if (currentPlayerIndex > queue.Count)
+                {
+                    currentPlayerIndex = 1;
+                } 
+            }
+            room.currentTurn = queue[currentPlayerIndex]; 
+            room.currentTrump = GetTrumpCardName(this.trump_card);
 
             if (room.server != null)
             {
@@ -242,7 +277,6 @@ namespace Liars_deck.classes
                 _ = room.server.BroadcastPlayersCards(players);
             }
             
-            currentPlayerIndex = currentPlayerIndex == room.clientElements.Count ? 1 : currentPlayerIndex + 1;
             room.currentTurn = queue[currentPlayerIndex];
             await room.server?.BroadcastTurnInfo(room.currentTurn, trump_card);
 

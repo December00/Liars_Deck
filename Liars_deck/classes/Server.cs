@@ -29,6 +29,9 @@ namespace Liars_deck.classes
         {
             try
             {
+
+                //IPAddress[] localips = Dns.GetHostAddresses(Dns.GetHostName());
+                //ip = localips[1];
                 listener = new TcpListener(ip, port);
                 listener.Start();
                 Task.Run(() => AcceptClients());
